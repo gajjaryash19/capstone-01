@@ -1,88 +1,215 @@
+import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { Sparkles, AlertTriangle, ArrowUpRight } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
+import { Download, Check, Sparkles, Database } from 'lucide-react'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
+import {
+  usePredictionsDirectory,
+  PredictionKpiCards,
+  PredictionDistributionChart,
+  ModelEvaluationCard,
+  PredictionFilterBar,
+  PredictionTable,
+  PredictionCardList,
+  PredictionPagination,
+  calculatePredictionDistribution,
+  calculateSegmentPredictionBreakdown,
+  MODEL_METADATA,
+  type EnrichedPredictionCustomer,
+} from '@/features/predictions'
+import { MOCK_CUSTOMERS } from '@/features/customers/mockData'
 
 export function PredictionsPage() {
+  const navigate = useNavigate()
+
+  const {
+    customers,
+    totalItems,
+    totalPages,
+    page,
+    pageSize,
+    startIndex,
+    endIndex,
+    globalKpis,
+    filteredKpis,
+    searchQuery,
+    segmentFilter,
+    tierFilter,
+    deltaFilter,
+    sortField,
+    sortDirection,
+    hasActiveFilters,
+    exportSuccess,
+    setSearchQuery,
+    setSegmentFilter,
+    setTierFilter,
+    setDeltaFilter,
+    setSort,
+    setPage,
+    setPageSize,
+    resetFilters,
+    exportToCsv,
+  } = usePredictionsDirectory()
+
+  // Deterministic chart data
+  const distributionBins = useMemo(() => calculatePredictionDistribution(MOCK_CUSTOMERS), [])
+
+  const segmentBreakdown = useMemo(() => calculateSegmentPredictionBreakdown(MOCK_CUSTOMERS), [])
+
+  const handleSelectCustomer = (customer: EnrichedPredictionCustomer) => {
+    navigate(`/customers/${customer.id}`)
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="space-y-6 max-w-7xl"
+      className="space-y-5 sm:space-y-6"
     >
+      {/* Page Title & Context Header */}
       <PageHeader
         title="CLV Predictions"
-        description="Machine-learning forecasts, purchase frequency projections, and churn probability."
+        description="Probabilistic customer lifetime value forecasts, value distributions, and model validation status."
+        badge={
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="teal" dot className="shrink-0 font-medium">
+              Demo Cohort • Synthetic Evaluation Baseline
+            </Badge>
+            <Badge
+              variant="outline"
+              className="shrink-0 text-muted-foreground font-mono text-[11px]"
+            >
+              12-Month Forward Horizon (Fixed)
+            </Badge>
+          </div>
+        }
+        actions={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToCsv}
+              className="gap-1.5 cursor-pointer text-xs"
+              aria-label="Export prediction records to CSV"
+            >
+              {exportSuccess ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Exported CSV</span>
+                </>
+              ) : (
+                <>
+                  <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span>Export CSV</span>
+                </>
+              )}
+            </Button>
+          </div>
+        }
       />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2 border-b border-border pb-4">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <CardTitle>High-Probability Expansion</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-3">
-            {[
-              { company: 'Acme Global Corp', confidence: '94%', expectedClv: '$18,400' },
-              { company: 'Nova Labs International', confidence: '89%', expectedClv: '$12,850' },
-              { company: 'Apex Digital Inc', confidence: '87%', expectedClv: '$11,200' },
-            ].map((account) => (
-              <div
-                key={account.company}
-                className="flex items-center justify-between rounded-md border border-border/60 p-3 text-xs"
-              >
-                <div>
-                  <div className="font-medium text-foreground">{account.company}</div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">
-                    Confidence:{' '}
-                    <span className="tabular-nums text-primary">{account.confidence}</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-semibold tabular-nums text-foreground">
-                    {account.expectedClv}
-                  </div>
-                  <div className="inline-flex items-center text-[11px] text-primary font-medium">
-                    <ArrowUpRight className="h-3 w-3 mr-0.5" /> High Propensity
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2 border-b border-border pb-4">
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
-            <CardTitle>Churn Early Warnings</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-3">
-            {[
-              { account: 'Vertex Media Group', risk: 'Critical (82%)', ltvAtRisk: '$9,200' },
-              { account: 'Solaris Cloud Systems', risk: 'High (68%)', ltvAtRisk: '$6,450' },
-              { account: 'Beacon Logistics', risk: 'Elevated (55%)', ltvAtRisk: '$5,100' },
-            ].map((item) => (
-              <div
-                key={item.account}
-                className="flex items-center justify-between rounded-md border border-border/60 p-3 text-xs"
-              >
-                <div>
-                  <div className="font-medium text-foreground">{item.account}</div>
-                  <div className="mt-0.5">
-                    <Badge variant="destructive">{item.risk}</Badge>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-semibold tabular-nums text-foreground">{item.ltvAtRisk}</div>
-                  <div className="text-[11px] text-muted-foreground">LTV at Risk</div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+      {/* Demo / Experimental Transparency Notice */}
+      <div className="rounded-lg border border-primary/20 bg-accent/40 p-3 sm:p-4 text-xs text-muted-foreground flex items-start gap-3">
+        <Database className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <p className="font-semibold text-foreground">
+            Model Environment: Offline BG/NBD + Gamma-Gamma Baseline
+          </p>
+          <p className="text-[11px] leading-relaxed">
+            Customer-level projections are generated using deterministic synthetic data
+            parameterized to match probabilistic transaction cadence (BG/NBD) and monetary value
+            (Gamma-Gamma) across a fixed 12-month forward horizon. Ground truth holdout validation
+            is scheduled for Phase 5 batch backtesting.
+          </p>
+        </div>
       </div>
+
+      {/* Summary KPI Cards */}
+      <section aria-label="Prediction Summary Metrics">
+        <PredictionKpiCards
+          kpis={hasActiveFilters ? filteredKpis : globalKpis}
+          filteredCount={totalItems}
+          isFiltered={hasActiveFilters}
+        />
+      </section>
+
+      {/* Predicted Value Distribution & Model Evaluation Cards */}
+      <div className="grid gap-5 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+        <section aria-label="Customer Value Distribution Chart">
+          <PredictionDistributionChart
+            distributionBins={distributionBins}
+            segmentBreakdown={segmentBreakdown}
+          />
+        </section>
+
+        <section aria-label="Model Performance & Evaluation Protocol">
+          <ModelEvaluationCard metadata={MODEL_METADATA} kpis={globalKpis} />
+        </section>
+      </div>
+
+      {/* Prediction Explorer Section */}
+      <section aria-label="Customer Prediction Explorer" className="space-y-3 sm:space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+          <div>
+            <h2 className="text-base sm:text-lg font-semibold tracking-tight text-foreground flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span>Prediction Explorer</span>
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Search, filter, and compare account-level forward forecasts against historical spend.
+            </p>
+          </div>
+        </div>
+
+        {/* Filter Bar */}
+        <PredictionFilterBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          segmentFilter={segmentFilter}
+          onSegmentChange={setSegmentFilter}
+          tierFilter={tierFilter}
+          onTierChange={setTierFilter}
+          deltaFilter={deltaFilter}
+          onDeltaChange={setDeltaFilter}
+          onResetFilters={resetFilters}
+          hasActiveFilters={hasActiveFilters}
+          totalFiltered={totalItems}
+          totalAll={globalKpis.totalCustomers}
+        />
+
+        {/* Desktop & Tablet Table */}
+        <div className="hidden sm:block">
+          <PredictionTable
+            customers={customers}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSort={setSort}
+            onSelectCustomer={handleSelectCustomer}
+            onResetFilters={resetFilters}
+            hasActiveFilters={hasActiveFilters}
+          />
+        </div>
+
+        {/* Mobile Card List */}
+        <div className="block sm:hidden">
+          <PredictionCardList customers={customers} onSelectCustomer={handleSelectCustomer} />
+        </div>
+
+        {/* Pagination Controls */}
+        <PredictionPagination
+          page={page}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+        />
+      </section>
     </motion.div>
   )
 }

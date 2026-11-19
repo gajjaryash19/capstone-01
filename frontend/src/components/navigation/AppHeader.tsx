@@ -22,7 +22,9 @@ const pageTitles: Record<string, string> = {
 
 export function AppHeader({ onToggleMobile, onToggleCollapse, collapsed = false }: AppHeaderProps) {
   const location = useLocation()
-  const currentTitle = pageTitles[location.pathname] || 'Analytics'
+  const currentTitle = location.pathname.startsWith('/customers/')
+    ? 'Customer Profile'
+    : pageTitles[location.pathname] || 'Analytics'
 
   const {
     data: health,
