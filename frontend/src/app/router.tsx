@@ -9,6 +9,9 @@ const OverviewPage = lazy(() =>
 const CustomersPage = lazy(() =>
   import('./routes/CustomersPage').then((m) => ({ default: m.CustomersPage })),
 )
+const CustomerProfilePage = lazy(() =>
+  import('./routes/CustomerProfilePage').then((m) => ({ default: m.CustomerProfilePage })),
+)
 const SegmentsPage = lazy(() =>
   import('./routes/SegmentsPage').then((m) => ({ default: m.SegmentsPage })),
 )
@@ -33,6 +36,7 @@ export function Router() {
           <Route element={<AppLayout />}>
             <Route index element={<OverviewPage />} />
             <Route path="customers" element={<CustomersPage />} />
+            <Route path="customers/:customerId" element={<CustomerProfilePage />} />
             <Route path="segments" element={<SegmentsPage />} />
             <Route path="predictions" element={<PredictionsPage />} />
             <Route path="insights" element={<InsightsPage />} />
