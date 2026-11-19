@@ -1,0 +1,162 @@
+@theme {
+  /* Semantic Color Utilities */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-light: var(--primary-light);
+  --color-primary-surface: var(--primary-surface);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Analytical Chart Palette */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-grid: var(--chart-grid);
+
+  /* Typography Scale & Font Families */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Restrained Border Radii */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-full: 9999px;
+
+  /* Minimal Elevation Shadows */
+  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.03);
+  --shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.05), 0 1px 2px -1px rgb(15 23 42 / 0.04);
+  --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.05), 0 2px 4px -2px rgb(15 23 42 / 0.03);
+  --shadow-popover: 0 10px 15px -3px rgb(15 23 42 / 0.06), 0 4px 6px -4px rgb(15 23 42 / 0.03);
+}
+
+:root {
+  /* Light-first Canvas: Neutral background and crisp white surfaces */
+  --background: #f8fafc; /* Slate-50: calm, clean neutral background */
+  --foreground: #0f172a; /* Slate-900: deep slate/navy high-contrast body text */
+  --foreground-muted: #475569; /* Slate-600 */
+  --foreground-subtle: #64748b; /* Slate-500 */
+
+  --card: #ffffff; /* Pure white card surface */
+  --card-foreground: #0f172a;
+
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+
+  /* Restrained Teal Accent Palette */
+  --primary: #0d9488; /* Teal-600: precise, confident brand accent */
+  --primary-hover: #0f766e; /* Teal-700 */
+  --primary-light: #ccfbf1; /* Teal-100 */
+  --primary-surface: #f0fdfa; /* Teal-50 */
+  --primary-foreground: #ffffff;
+
+  /* Secondary & Muted Controls */
+  --secondary: #f1f5f9; /* Slate-100 */
+  --secondary-foreground: #1e293b; /* Slate-800 */
+
+  --muted: #f1f5f9; /* Slate-100 */
+  --muted-foreground: #64748b; /* Slate-500 */
+
+  --accent: #f0fdfa; /* Teal-50 */
+  --accent-foreground: #115e59; /* Teal-800 */
+
+  /* Semantic Feedback Tokens */
+  --destructive: #e11d48; /* Rose-600: precise churn risk/error */
+  --destructive-foreground: #ffffff;
+  --success: #059669; /* Emerald-600 */
+  --warning: #d97706; /* Amber-600 */
+
+  /* Subtle Borders */
+  --border: #e2e8f0; /* Slate-200: subtle component delimiter */
+  --border-subtle: #f1f5f9; /* Slate-100 */
+  --border-strong: #cbd5e1; /* Slate-300 */
+  --input: #e2e8f0;
+  --ring: #0d9488;
+
+  /* Analytics & Visualization Series (Teal-first harmony) */
+  --chart-1: #0d9488; /* Observed CLV / Primary (Teal-600) */
+  --chart-2: #0284c7; /* ML Forecast / Predicted (Sky-600) */
+  --chart-3: #6366f1; /* High-Tier Expansion (Indigo-500) */
+  --chart-4: #d97706; /* Mid-Tier Cohort (Amber-600) */
+  --chart-5: #e11d48; /* Churn Risk (Rose-600) */
+  --chart-grid: #e2e8f0; /* Crisp chart gridline (Slate-200) */
+}
+
+[data-theme='dark'] {
+  --background: #090d16; /* Deep navy slate canvas */
+  --foreground: #f8fafc;
+  --foreground-muted: #94a3b8;
+  --foreground-subtle: #64748b;
+
+  --card: #0f172a; /* Slate-900 surface */
+  --card-foreground: #f8fafc;
+
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
+
+  --primary: #14b8a6; /* Teal-500 */
+  --primary-hover: #2dd4bf; /* Teal-400 */
+  --primary-light: #134e4a;
+  --primary-surface: #042f2e;
+  --primary-foreground: #022c22;
+
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+
+  --accent: #134e4a;
+  --accent-foreground: #ccfbf1;
+
+  --destructive: #f43f5e;
+  --destructive-foreground: #ffffff;
+  --success: #10b981;
+  --warning: #f59e0b;
+
+  --border: #1e293b; /* Slate-800 */
+  --border-subtle: #141e33;
+  --border-strong: #334155;
+  --input: #1e293b;
+  --ring: #14b8a6;
+
+  --chart-1: #14b8a6;
+  --chart-2: #38bdf8;
+  --chart-3: #818cf8;
+  --chart-4: #fbbf24;
+  --chart-5: #fb7185;
+  --chart-grid: #1e293b;
+}
