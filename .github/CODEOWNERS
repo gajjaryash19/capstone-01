@@ -1,0 +1,6 @@
+# Replace the placeholders with real GitHub usernames after teammates are added.
+*              @REPLACE-M1
+/frontend/     @REPLACE-M4
+/backend/      @REPLACE-M3
+/data-pipeline/ @REPLACE-M2
+/docs/         @REPLACE-M1

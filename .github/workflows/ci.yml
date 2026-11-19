@@ -1,0 +1,49 @@
+name: CI
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        if: hashFiles('frontend/package.json') != ''
+        with:
+          node-version: 20
+      - name: Install
+        if: hashFiles('frontend/package.json') != ''
+        run: npm ci
+        working-directory: frontend
+      - name: Lint
+        if: hashFiles('frontend/package.json') != ''
+        run: npm run lint --if-present
+        working-directory: frontend
+      - name: Test
+        if: hashFiles('frontend/package.json') != ''
+        run: npm test --if-present
+        working-directory: frontend
+      - name: Build
+        if: hashFiles('frontend/package.json') != ''
+        run: npm run build
+        working-directory: frontend
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        if: hashFiles('backend/requirements.txt') != ''
+        with:
+          python-version: "3.11"
+      - name: Install
+        if: hashFiles('backend/requirements.txt') != ''
+        run: pip install -r requirements.txt
+        working-directory: backend
+      - name: Test
+        if: hashFiles('backend/requirements.txt') != ''
+        run: pytest
+        working-directory: backend

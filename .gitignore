@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.vscode/
+.idea/
+.DS_Store
+# raw data and artifacts: never commit
+*.xlsx
+*.xls
+data/raw/
+*.pkl
+*.joblib
+*.dump
+*.sql.gz
