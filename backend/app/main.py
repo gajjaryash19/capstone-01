@@ -44,7 +44,6 @@ def root():
     logger.info("Root endpoint accessed")
     return {"message": f"{settings.app_name} is running"}
 
-<<<<<<< HEAD
 
 @app.get("/health")
 def health_check():
@@ -58,6 +57,4 @@ def system_info():
         "version": settings.app_version,
         "status": "healthy",
     }
-=======
 app.include_router(health_router)
->>>>>>> 18b234ce9e85a5a8a9a3c89894d51ed2746c8050
