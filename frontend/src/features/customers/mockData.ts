@@ -635,9 +635,17 @@ export function calculateCustomerKpis(customers: CustomerRecord[]) {
     }
   }
 
-  const highValueCustomers = customers.filter((c) => c.predictedClv >= 10000).length
-  const atRiskCustomers = customers.filter((c) => c.churnRisk === 'high').length
-  const totalClv = customers.reduce((acc, c) => acc + c.predictedClv, 0)
+  let highValueCustomers = 0
+  let atRiskCustomers = 0
+  let totalClv = 0
+
+  for (let i = 0; i < totalCustomers; i++) {
+    const c = customers[i]
+    if (c.predictedClv >= 10000) highValueCustomers++
+    if (c.churnRisk === 'high') atRiskCustomers++
+    totalClv += c.predictedClv
+  }
+
   const averageClv = Math.round(totalClv / totalCustomers)
 
   return {

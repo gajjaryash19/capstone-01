@@ -1,6 +1,8 @@
+import { memo } from 'react'
 import { ChevronRight, Building2, Calendar, TrendingUp } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { formatCurrency, formatDate, formatNumber } from '@/lib/formatters'
+import { prefetchRoute } from '@/lib/router/prefetch'
 import type { CustomerRecord } from '../types'
 
 interface CustomerCardListProps {
@@ -8,16 +10,42 @@ interface CustomerCardListProps {
   onSelectCustomer: (customer: CustomerRecord) => void
 }
 
-export function CustomerCardList({ customers, onSelectCustomer }: CustomerCardListProps) {
-  const getRiskVariant = (risk: string) => {
+function CustomerCardListComponent({ customers, onSelectCustomer }: CustomerCardListProps) {
+  const getRiskBadge = (risk: string) => {
     switch (risk) {
       case 'low':
-        return 'teal' as const
+        return (
+          <Badge variant="neutral" dot className="font-mono text-[10px]">
+            LOW
+          </Badge>
+        )
       case 'moderate':
-        return 'warning' as const
+        return (
+          <Badge variant="warning" dot className="font-mono text-[10px]">
+            MODERATE
+          </Badge>
+        )
       case 'high':
       default:
-        return 'destructive' as const
+        return (
+          <Badge variant="destructive" dot className="font-mono text-[10px]">
+            HIGH
+          </Badge>
+        )
+    }
+  }
+
+  const getSegmentBadge = (segment: string) => {
+    switch (segment) {
+      case 'Enterprise':
+        return 'border-foreground/30 bg-surface-elevated text-foreground font-semibold'
+      case 'Mid-Market':
+        return 'border-border bg-muted/60 text-foreground/90 font-medium'
+      case 'Growth':
+        return 'border-border bg-muted/40 text-muted-foreground font-medium'
+      case 'Standard':
+      default:
+        return 'border-border/60 bg-muted/20 text-muted-foreground/80'
     }
   }
 
@@ -27,7 +55,8 @@ export function CustomerCardList({ customers, onSelectCustomer }: CustomerCardLi
         <div
           key={customer.id}
           onClick={() => onSelectCustomer(customer)}
-          className="rounded-lg border border-border bg-card p-3.5 shadow-2xs transition-colors hover:border-border-strong cursor-pointer"
+          onPointerEnter={() => prefetchRoute('customerProfile')}
+          className="rounded-lg border border-border bg-card p-3.5 shadow-2xs transition-all duration-150 ease-out hover:border-border-strong cursor-pointer active:scale-[0.99] active:bg-surface-elevated/40 select-none"
           tabIndex={0}
           role="button"
           aria-label={`View customer details for ${customer.name}`}
@@ -41,7 +70,7 @@ export function CustomerCardList({ customers, onSelectCustomer }: CustomerCardLi
           {/* Header: Name, Avatar, Risk Badge */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/70 text-primary font-bold text-xs border border-primary/20">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-foreground font-bold text-xs border border-border shadow-2xs">
                 {customer.avatarInitials}
               </div>
               <div className="min-w-0">
@@ -50,7 +79,7 @@ export function CustomerCardList({ customers, onSelectCustomer }: CustomerCardLi
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                   <span className="font-mono">{customer.id}</span>
-                  <span>•</span>
+                  <span className="text-muted-foreground/50">•</span>
                   <span className="truncate flex items-center gap-0.5">
                     <Building2 className="h-2.5 w-2.5 inline" />
                     {customer.company}
@@ -59,66 +88,70 @@ export function CustomerCardList({ customers, onSelectCustomer }: CustomerCardLi
               </div>
             </div>
 
-            <Badge
-              variant={getRiskVariant(customer.churnRisk)}
-              dot
-              className="shrink-0 text-[10px]"
-            >
-              {customer.churnRisk.toUpperCase()}
-            </Badge>
+            {getRiskBadge(customer.churnRisk)}
           </div>
 
-          {/* Metrics Row */}
-          <div className="mt-3 grid grid-cols-2 gap-2 rounded-md bg-muted/40 p-2 text-xs">
+          {/* Metrics Grid */}
+          <div className="mt-3 grid grid-cols-2 gap-2 rounded-lg bg-surface-elevated/40 p-2.5 text-xs border border-border/60">
             <div>
-              <span className="text-[10px] text-muted-foreground uppercase font-medium flex items-center gap-1">
-                <TrendingUp className="h-3 w-3 text-primary" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium flex items-center gap-1">
+                <TrendingUp className="h-3 w-3 text-foreground" />
                 Predicted CLV
               </span>
-              <div className="text-xs font-bold text-primary tabular-nums mt-0.5">
+              <div className="text-xs font-bold text-foreground font-mono tabular-nums mt-0.5">
                 {formatCurrency(customer.predictedClv)}
               </div>
             </div>
 
             <div>
-              <span className="text-[10px] text-muted-foreground uppercase font-medium">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
                 Historical Rev.
               </span>
-              <div className="text-xs font-semibold text-foreground tabular-nums mt-0.5">
+              <div className="text-xs font-semibold text-muted-foreground font-mono tabular-nums mt-0.5">
                 {formatCurrency(customer.historicalRevenue)}
               </div>
             </div>
 
             <div>
-              <span className="text-[10px] text-muted-foreground uppercase font-medium">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
                 Orders / AOV
               </span>
-              <div className="text-xs text-foreground tabular-nums mt-0.5">
+              <div className="text-xs text-foreground font-mono tabular-nums mt-0.5">
                 {formatNumber(customer.totalOrders)} • {formatCurrency(customer.averageOrderValue)}
               </div>
             </div>
 
             <div>
-              <span className="text-[10px] text-muted-foreground uppercase font-medium">
-                Segment
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                Last Purchase
               </span>
-              <div className="text-xs font-medium text-foreground mt-0.5">{customer.segment}</div>
+              <div className="text-xs text-muted-foreground font-mono mt-0.5">
+                {formatDate(customer.lastPurchaseDate)}
+              </div>
             </div>
           </div>
 
-          {/* Footer: Last Purchase & View Prompt */}
-          <div className="mt-2.5 flex items-center justify-between text-[11px] text-muted-foreground pt-1.5 border-t border-border/40">
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              Last: {formatDate(customer.lastPurchaseDate)}
+          {/* Footer: Segment Badge & View Chevron */}
+          <div className="mt-3 flex items-center justify-between pt-2 border-t border-border/50 text-xs">
+            <span
+              className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-mono border ${getSegmentBadge(
+                customer.segment,
+              )}`}
+            >
+              {customer.segment}
             </span>
-            <span className="inline-flex items-center font-medium text-primary gap-0.5">
-              <span>View details</span>
-              <ChevronRight className="h-3 w-3" />
-            </span>
+
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium">
+              <span>View Profile</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+            </div>
           </div>
         </div>
       ))}
     </div>
   )
 }
+
+export const CustomerCardList = memo(CustomerCardListComponent)
+export default CustomerCardList

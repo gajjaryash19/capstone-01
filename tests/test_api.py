@@ -17,3 +17,13 @@ def test_health_endpoint():
 
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
+
+
+def test_system_endpoint():
+    response = client.get("/api/v1/system")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "app_name" in data
+    assert "version" in data
+    assert data["status"] == "healthy"

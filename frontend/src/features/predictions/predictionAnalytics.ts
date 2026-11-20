@@ -170,14 +170,27 @@ export function calculatePredictionDistribution(
   customers: CustomerRecord[] = MOCK_CUSTOMERS,
 ): PredictionDistributionBin[] {
   const totalCustomers = customers.length
-  const totalCohortClv = customers.reduce((sum, c) => sum + c.predictedClv, 0)
+  let totalCohortClv = 0
 
-  return DISTRIBUTION_BINS.map((bin) => {
-    const matching = customers.filter((c) => c.predictedClv >= bin.min && c.predictedClv <= bin.max)
-    const customerCount = matching.length
+  const binAcc = DISTRIBUTION_BINS.map(() => ({ count: 0, totalClv: 0 }))
+
+  for (let i = 0; i < totalCustomers; i++) {
+    const clv = customers[i].predictedClv
+    totalCohortClv += clv
+    for (let b = 0; b < DISTRIBUTION_BINS.length; b++) {
+      if (clv >= DISTRIBUTION_BINS[b].min && clv <= DISTRIBUTION_BINS[b].max) {
+        binAcc[b].count++
+        binAcc[b].totalClv += clv
+        break
+      }
+    }
+  }
+
+  return DISTRIBUTION_BINS.map((bin, index) => {
+    const customerCount = binAcc[index].count
     const customerShare =
       totalCustomers > 0 ? Number(((customerCount / totalCustomers) * 100).toFixed(1)) : 0
-    const totalClv = matching.reduce((sum, c) => sum + c.predictedClv, 0)
+    const totalClv = binAcc[index].totalClv
     const clvShare = totalCohortClv > 0 ? Number(((totalClv / totalCohortClv) * 100).toFixed(1)) : 0
     const avgClv = customerCount > 0 ? Math.round(totalClv / customerCount) : 0
 
@@ -206,17 +219,35 @@ export function calculateSegmentPredictionBreakdown(
   customers: CustomerRecord[] = MOCK_CUSTOMERS,
 ): PredictionSegmentBreakdown[] {
   const totalCustomers = customers.length
-  const totalCohortClv = customers.reduce((sum, c) => sum + c.predictedClv, 0)
+  let totalCohortClv = 0
+
+  const segAcc: Record<CustomerSegment, { count: number; totalClv: number; histRev: number }> = {
+    Enterprise: { count: 0, totalClv: 0, histRev: 0 },
+    'Mid-Market': { count: 0, totalClv: 0, histRev: 0 },
+    Growth: { count: 0, totalClv: 0, histRev: 0 },
+    Standard: { count: 0, totalClv: 0, histRev: 0 },
+  }
+
+  for (let i = 0; i < totalCustomers; i++) {
+    const c = customers[i]
+    totalCohortClv += c.predictedClv
+    const acc = segAcc[c.segment]
+    if (acc) {
+      acc.count++
+      acc.totalClv += c.predictedClv
+      acc.histRev += c.historicalRevenue
+    }
+  }
 
   return ORDERED_SEGMENTS.map((segment) => {
-    const segCustomers = customers.filter((c) => c.segment === segment)
-    const count = segCustomers.length
+    const acc = segAcc[segment]
+    const count = acc.count
     const customerShare =
       totalCustomers > 0 ? Number(((count / totalCustomers) * 100).toFixed(1)) : 0
-    const totalClv = segCustomers.reduce((sum, c) => sum + c.predictedClv, 0)
+    const totalClv = acc.totalClv
     const clvShare = totalCohortClv > 0 ? Number(((totalClv / totalCohortClv) * 100).toFixed(1)) : 0
     const avgClv = count > 0 ? Math.round(totalClv / count) : 0
-    const historicalRevenue = segCustomers.reduce((sum, c) => sum + c.historicalRevenue, 0)
+    const historicalRevenue = acc.histRev
     const projectedExpansion = totalClv - historicalRevenue
     const expansionPercent =
       historicalRevenue > 0

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import {
   ArrowUpDown,
   ArrowUp,
@@ -16,7 +17,6 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/Table'
-import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { formatCurrency, formatPercent } from '@/lib/formatters'
 import type { EnrichedPredictionCustomer, PredictionSortField, SortDirection } from '../types'
@@ -31,7 +31,7 @@ interface PredictionTableProps {
   hasActiveFilters: boolean
 }
 
-export function PredictionTable({
+function PredictionTableComponent({
   customers,
   sortField,
   sortDirection,
@@ -55,7 +55,7 @@ export function PredictionTable({
         <button
           type="button"
           onClick={() => onSort(field)}
-          className={`inline-flex items-center gap-1 text-xs font-semibold hover:text-foreground transition-colors cursor-pointer group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-xs px-1 py-0.5 -mx-1 ${
+          className={`inline-flex items-center gap-1 text-xs font-semibold hover:text-foreground transition-all duration-150 active:scale-95 cursor-pointer group select-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-xs px-1 py-0.5 -mx-1 ${
             isSorted ? 'text-foreground' : 'text-muted-foreground'
           }`}
           aria-label={`Sort by ${label} (${ariaSortValue})`}
@@ -64,9 +64,9 @@ export function PredictionTable({
           <span className="shrink-0 text-muted-foreground/60 group-hover:text-foreground">
             {isSorted ? (
               sortDirection === 'asc' ? (
-                <ArrowUp className="h-3 w-3 text-primary" />
+                <ArrowUp className="h-3 w-3 text-foreground" />
               ) : (
-                <ArrowDown className="h-3 w-3 text-primary" />
+                <ArrowDown className="h-3 w-3 text-foreground" />
               )
             ) : (
               <ArrowUpDown className="h-3 w-3 opacity-40 group-hover:opacity-100" />
@@ -77,39 +77,39 @@ export function PredictionTable({
     )
   }
 
-  const getRiskVariant = (risk: string) => {
-    switch (risk) {
-      case 'low':
-        return 'teal' as const
-      case 'moderate':
-        return 'warning' as const
-      case 'high':
+  const getSegmentBadgeStyle = (segment: string) => {
+    switch (segment) {
+      case 'Enterprise':
+        return 'border-foreground/30 bg-surface-elevated text-foreground font-semibold'
+      case 'Mid-Market':
+        return 'border-border bg-muted/60 text-foreground/90 font-medium'
+      case 'Growth':
+        return 'border-border bg-muted/40 text-muted-foreground font-medium'
+      case 'Standard':
       default:
-        return 'destructive' as const
+        return 'border-border/60 bg-muted/20 text-muted-foreground/80 font-normal'
     }
   }
 
-  const getSegmentVariant = (segment: string) => {
-    switch (segment) {
-      case 'Enterprise':
-        return 'border-primary/30 bg-primary/10 text-primary'
-      case 'Mid-Market':
-        return 'border-sky-500/30 bg-sky-500/10 text-sky-700'
-      case 'Growth':
-        return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'
-      case 'Standard':
+  const getRiskBadge = (risk: string) => {
+    switch (risk) {
+      case 'high':
+        return 'border-red-500/30 bg-red-500/10 text-red-400 font-semibold'
+      case 'moderate':
+        return 'border-amber-500/30 bg-amber-500/10 text-amber-400 font-medium'
+      case 'low':
       default:
-        return 'border-border bg-muted/60 text-muted-foreground'
+        return 'border-border bg-muted/40 text-muted-foreground font-medium'
     }
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card shadow-2xs overflow-hidden">
+    <div className="rounded-lg border border-border bg-surface shadow-2xs overflow-hidden">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/40 hover:bg-muted/40">
-              {renderSortableHeader('name', 'Account / Customer')}
+            <TableRow className="bg-surface-elevated/70 border-b border-border">
+              {renderSortableHeader('name', 'Customer')}
               {renderSortableHeader('segment', 'Segment')}
               <TableHead
                 scope="col"
@@ -117,10 +117,10 @@ export function PredictionTable({
               >
                 Horizon
               </TableHead>
-              {renderSortableHeader('historicalRevenue', 'Historical Spend', true)}
+              {renderSortableHeader('historicalRevenue', 'Past Spend', true)}
               {renderSortableHeader('predictedClv', 'Predicted CLV', true)}
-              {renderSortableHeader('valueDelta', 'Projected Delta', true)}
-              {renderSortableHeader('churnProbability', 'Retention Risk')}
+              {renderSortableHeader('valueDelta', 'Projected Change', true)}
+              {renderSortableHeader('churnProbability', 'Churn Risk')}
               <TableHead
                 scope="col"
                 className="px-2.5 sm:px-3 h-9 text-xs font-semibold text-right pr-3 sm:pr-4"
@@ -135,15 +135,13 @@ export function PredictionTable({
               <TableRow>
                 <TableCell colSpan={8} className="h-44 text-center">
                   <div className="flex flex-col items-center justify-center space-y-2.5">
-                    <div className="rounded-full bg-muted/80 p-3 text-muted-foreground">
+                    <div className="rounded-2xl bg-surface-elevated p-3 text-muted-foreground border border-border">
                       <Users className="h-5 w-5" />
                     </div>
                     <div className="space-y-0.5">
-                      <p className="text-xs font-semibold text-foreground">
-                        No prediction records match your criteria
-                      </p>
+                      <p className="text-xs font-semibold text-foreground">No customers found</p>
                       <p className="text-[11px] text-muted-foreground">
-                        Try loosening your search term or resetting your segment filters.
+                        Try adjusting your search or clearing your filters.
                       </p>
                     </div>
                     {hasActiveFilters && (
@@ -151,7 +149,7 @@ export function PredictionTable({
                         variant="outline"
                         size="sm"
                         onClick={onResetFilters}
-                        className="mt-1 h-7 text-xs cursor-pointer"
+                        className="text-xs mt-1 cursor-pointer bg-surface-elevated border-border"
                       >
                         Reset filters
                       </Button>
@@ -160,115 +158,129 @@ export function PredictionTable({
                 </TableCell>
               </TableRow>
             ) : (
-              customers.map((customer) => (
-                <TableRow
-                  key={customer.id}
-                  onClick={() => onSelectCustomer(customer)}
-                  className="cursor-pointer hover:bg-muted/30 transition-colors group"
-                >
-                  {/* Account Name & Company */}
-                  <TableCell className="px-2.5 sm:px-3 py-2.5 max-w-[220px]">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/70 text-primary font-bold text-[10px] border border-primary/20">
-                        {customer.avatarInitials}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                          {customer.name}
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                          <span className="font-mono">{customer.id}</span>
-                          <span>•</span>
-                          <span className="truncate flex items-center gap-0.5">
-                            <Building2 className="h-2.5 w-2.5 inline" />
-                            {customer.company}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
+              customers.map((customer) => {
+                const isPositiveDelta = customer.valueDelta >= 0
 
-                  {/* Segment */}
-                  <TableCell className="px-2.5 sm:px-3 py-2.5">
-                    <span
-                      className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium border ${getSegmentVariant(
-                        customer.segment,
-                      )}`}
-                    >
-                      {customer.segment}
-                    </span>
-                  </TableCell>
-
-                  {/* Horizon */}
-                  <TableCell className="px-2.5 sm:px-3 py-2.5">
-                    <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground border border-border/80">
-                      12 Mo
-                    </span>
-                  </TableCell>
-
-                  {/* Historical Revenue */}
-                  <TableCell className="px-2.5 sm:px-3 py-2.5 text-right font-medium tabular-nums text-muted-foreground">
-                    {formatCurrency(customer.historicalRevenue)}
-                  </TableCell>
-
-                  {/* Predicted CLV */}
-                  <TableCell className="px-2.5 sm:px-3 py-2.5 text-right font-bold tabular-nums text-foreground">
-                    <span className="text-primary font-semibold">
-                      {formatCurrency(customer.predictedClv)}
-                    </span>
-                  </TableCell>
-
-                  {/* Projected Net Delta */}
-                  <TableCell className="px-2.5 sm:px-3 py-2.5 text-right tabular-nums">
-                    <div className="flex items-center justify-end gap-1 font-semibold text-xs">
-                      {customer.isExpansion ? (
-                        <span className="inline-flex items-center text-emerald-600 gap-0.5">
-                          <TrendingUp className="h-3 w-3" />
-                          <span>+{formatCurrency(customer.valueDelta)}</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center text-amber-600 gap-0.5">
-                          <TrendingDown className="h-3 w-3" />
-                          <span>{formatCurrency(customer.valueDelta)}</span>
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-[10px] text-muted-foreground">
-                      {customer.isExpansion ? '+' : ''}
-                      {customer.valueDeltaPercent}%
-                    </div>
-                  </TableCell>
-
-                  {/* Retention Risk */}
-                  <TableCell className="px-2.5 sm:px-3 py-2.5">
-                    <div className="flex items-center gap-1.5">
-                      <Badge variant={getRiskVariant(customer.churnRisk)} dot>
-                        {customer.churnRisk.toUpperCase()}
-                      </Badge>
-                      <span className="text-[11px] tabular-nums text-muted-foreground font-mono">
-                        {formatPercent(customer.churnProbability * 100, 0)}
-                      </span>
-                    </div>
-                  </TableCell>
-
-                  {/* Action */}
-                  <TableCell className="px-2.5 sm:px-3 py-2.5 text-right pr-3 sm:pr-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
+                return (
+                  <TableRow
+                    key={customer.id}
+                    onClick={() => onSelectCustomer(customer)}
+                    tabIndex={0}
+                    role="row"
+                    aria-label={`Inspect predictions for ${customer.name}`}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
                         onSelectCustomer(customer)
-                      }}
-                      className="h-7 px-2 text-[11px] gap-1 cursor-pointer hover:bg-card"
-                      aria-label={`View profile for ${customer.name}`}
-                    >
-                      <span>View</span>
-                      <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
+                      }
+                    }}
+                    className="hover:bg-surface-elevated/60 transition-colors duration-150 ease-out cursor-pointer group border-b border-border/70 focus-visible:bg-surface-elevated/60 outline-none"
+                  >
+                    {/* Account Identity */}
+                    <TableCell className="px-2.5 sm:px-3 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface-elevated font-mono text-[11px] font-semibold text-foreground border border-border">
+                          {customer.avatarInitials}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-xs text-foreground group-hover:text-foreground transition-colors truncate">
+                            {customer.name}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                            <span className="font-mono text-muted-foreground/80">
+                              {customer.id}
+                            </span>
+                            <span className="truncate flex items-center gap-1">
+                              <Building2 className="h-2.5 w-2.5" />
+                              {customer.company}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    {/* Segment Badge */}
+                    <TableCell className="px-2.5 sm:px-3 py-3">
+                      <span
+                        className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] border ${getSegmentBadgeStyle(
+                          customer.segment,
+                        )}`}
+                      >
+                        {customer.segment}
+                      </span>
+                    </TableCell>
+
+                    {/* Horizon */}
+                    <TableCell className="px-2.5 sm:px-3 py-3 font-mono text-xs text-muted-foreground">
+                      12 Months
+                    </TableCell>
+
+                    {/* Historical Spend */}
+                    <TableCell className="px-2.5 sm:px-3 py-3 text-right font-mono text-xs tabular-nums text-muted-foreground">
+                      {formatCurrency(customer.historicalRevenue)}
+                    </TableCell>
+
+                    {/* Predicted CLV */}
+                    <TableCell className="px-2.5 sm:px-3 py-3 text-right font-mono text-xs font-semibold tabular-nums text-foreground">
+                      {formatCurrency(customer.predictedClv)}
+                    </TableCell>
+
+                    {/* Projected Delta */}
+                    <TableCell className="px-2.5 sm:px-3 py-3 text-right font-mono text-xs tabular-nums">
+                      <div className="inline-flex items-center gap-1 font-medium text-foreground">
+                        {isPositiveDelta ? (
+                          <>
+                            <TrendingUp className="h-3 w-3 text-muted-foreground" />
+                            <span>+{formatCurrency(customer.valueDelta)}</span>
+                          </>
+                        ) : (
+                          <>
+                            <TrendingDown className="h-3 w-3 text-muted-foreground" />
+                            <span>{formatCurrency(customer.valueDelta)}</span>
+                          </>
+                        )}
+                        <span className="text-[10px] text-muted-foreground">
+                          ({isPositiveDelta ? '+' : ''}
+                          {formatPercent(customer.valueDeltaPercent, 0)})
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    {/* Churn Propensity & Risk */}
+                    <TableCell className="px-2.5 sm:px-3 py-3">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[10px] uppercase border ${getRiskBadge(
+                            customer.churnRisk,
+                          )}`}
+                        >
+                          {customer.churnRisk}
+                        </span>
+                        <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                          {formatPercent(customer.churnProbability * 100, 1)}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    {/* Profile Link Action */}
+                    <TableCell className="px-2.5 sm:px-3 py-3 text-right pr-3 sm:pr-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onSelectCustomer(customer)
+                        }}
+                        className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                        title="Open customer intelligence profile"
+                      >
+                        <span className="hidden sm:inline">Profile</span>
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
             )}
           </TableBody>
         </Table>
@@ -276,3 +288,6 @@ export function PredictionTable({
     </div>
   )
 }
+
+export const PredictionTable = memo(PredictionTableComponent)
+export default PredictionTable

@@ -10,8 +10,8 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = 'Failed to load analytical data',
-  message = 'An unexpected error occurred while communicating with the service.',
+  title = 'Unable to load data',
+  message = 'Something went wrong while loading this data. Please try again.',
   onRetry,
   className,
 }: ErrorStateProps) {
@@ -32,7 +32,7 @@ export function ErrorState({
         <div className="mt-4">
           <Button variant="outline" size="sm" onClick={onRetry}>
             <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-            Retry Request
+            Try again
           </Button>
         </div>
       )}

@@ -15,8 +15,10 @@ export const TooltipContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        'z-50 overflow-hidden rounded-md border border-border bg-foreground px-2.5 py-1 text-[11px] text-background shadow-xs',
-        'animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+        'z-50 overflow-hidden rounded-md border border-border bg-popover px-2.5 py-1 text-[11px] text-popover-foreground shadow-md select-none',
+        'duration-100 ease-out',
+        'animate-in fade-in-0 zoom-in-[0.98]',
+        'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-[0.98]',
         className,
       )}
       {...props}
@@ -36,7 +38,7 @@ export function SimpleTooltip({
   content,
   children,
   side = 'top',
-  delayDuration = 200,
+  delayDuration = 150,
 }: SimpleTooltipProps) {
   return (
     <TooltipProvider delayDuration={delayDuration}>

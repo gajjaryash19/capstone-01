@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     app_description: str = "API for customer lifetime value prediction and customer analytics"
 
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = "http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173,http://127.0.0.1:4173"
 
     model_config = SettingsConfigDict(
         env_file=".env",

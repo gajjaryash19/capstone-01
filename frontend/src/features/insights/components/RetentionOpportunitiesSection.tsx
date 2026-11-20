@@ -18,23 +18,22 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
   const navigate = useNavigate()
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col bg-surface border-border">
       <CardHeader className="border-b border-border pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4 text-destructive" />
-              <CardTitle>Customer Retention Opportunities</CardTitle>
+              <ShieldAlert className="h-4 w-4 text-red-400" />
+              <CardTitle>Retention Opportunities</CardTitle>
             </div>
             <CardDescription className="mt-0.5">
-              Targeted retention and expansion cohorts derived from individual customer churn
-              probabilities and value benchmarks.
+              Customers needing proactive outreach based on churn risk and predicted value.
             </CardDescription>
           </div>
 
           {/* Sub-tab navigation */}
           <div
-            className="flex items-center gap-1 p-1 bg-muted/40 rounded-lg border border-border self-start sm:self-auto text-xs"
+            className="flex items-center gap-1 p-1 bg-surface-elevated/60 rounded-lg border border-border self-start sm:self-auto text-xs"
             role="tablist"
           >
             <button
@@ -43,11 +42,11 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
               onClick={() => setActiveTab('high-risk')}
               className={`px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'high-risk'
-                  ? 'bg-card text-foreground shadow-2xs border border-border/80'
+                  ? 'bg-surface text-foreground shadow-2xs border border-border'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <AlertCircle className="h-3.5 w-3.5 text-destructive" />
+              <AlertCircle className="h-3.5 w-3.5 text-red-400" />
               <span>High-Value at Risk ({data.highValueAtRisk.length})</span>
             </button>
             <button
@@ -56,11 +55,11 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
               onClick={() => setActiveTab('outperformers')}
               className={`px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'outperformers'
-                  ? 'bg-card text-foreground shadow-2xs border border-border/80'
+                  ? 'bg-surface text-foreground shadow-2xs border border-border'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Zap className="h-3.5 w-3.5 text-primary" />
+              <Zap className="h-3.5 w-3.5 text-foreground" />
               <span>Segment Leaders ({data.outperformers.length})</span>
             </button>
             <button
@@ -69,7 +68,7 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
               onClick={() => setActiveTab('dormant')}
               className={`px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'dormant'
-                  ? 'bg-card text-foreground shadow-2xs border border-border/80'
+                  ? 'bg-surface text-foreground shadow-2xs border border-border'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -84,15 +83,21 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
         {/* Tab 1: High-Value at Risk */}
         {activeTab === 'high-risk' && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs text-muted-foreground pb-1">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs text-muted-foreground pb-1">
               <span>
                 Accounts with{' '}
-                <strong className="text-foreground font-semibold">predicted CLV ≥ $4,000</strong>{' '}
-                and <strong className="text-destructive font-semibold">churn risk &gt; 65%</strong>.
+                <strong className="text-foreground font-semibold font-mono">
+                  predicted CLV ≥ $4,000
+                </strong>{' '}
+                and{' '}
+                <strong className="text-red-400 font-semibold font-mono">
+                  churn risk &gt; 65%
+                </strong>
+                .
               </span>
               <span className="font-medium text-foreground">
                 Total At-Risk Exposure:{' '}
-                <strong className="text-destructive font-semibold tabular-nums">
+                <strong className="text-red-400 font-semibold font-mono tabular-nums">
                   {formatCurrency(data.totalAtRiskClv)}
                 </strong>
               </span>
@@ -103,12 +108,12 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
                 ({ customer, exposureShareOfCohort, daysSinceLastPurchase }) => (
                   <div
                     key={customer.id}
-                    className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 flex flex-col justify-between space-y-3 hover:border-destructive/60 transition-colors"
+                    className="rounded-lg border border-red-500/30 bg-red-950/20 p-4 flex flex-col justify-between space-y-3 hover:border-red-500/50 transition-colors"
                   >
                     <div className="space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-full bg-card border border-border flex items-center justify-center text-xs font-semibold text-foreground shrink-0 shadow-2xs">
+                          <div className="h-8 w-8 rounded-full bg-surface-elevated border border-border flex items-center justify-center text-xs font-semibold text-foreground shrink-0 shadow-2xs font-mono">
                             {customer.avatarInitials}
                           </div>
                           <div>
@@ -128,25 +133,25 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
                       <div className="space-y-1.5 pt-1 text-xs">
                         <div className="flex justify-between items-center text-muted-foreground">
                           <span>Predicted CLV:</span>
-                          <strong className="text-foreground font-semibold tabular-nums">
+                          <strong className="text-foreground font-semibold font-mono tabular-nums">
                             {formatCurrency(customer.predictedClv)}
                           </strong>
                         </div>
                         <div className="flex justify-between items-center text-muted-foreground">
                           <span>Segment:</span>
-                          <Badge variant="outline" className="text-[10px]">
+                          <Badge variant="outline" className="text-[10px] font-mono">
                             {customer.segment}
                           </Badge>
                         </div>
                         <div className="flex justify-between items-center text-muted-foreground">
                           <span>Churn Probability:</span>
-                          <span className="font-semibold text-destructive tabular-nums">
+                          <span className="font-semibold text-red-400 font-mono tabular-nums">
                             {formatPercent(customer.churnProbability * 100, 0)}
                           </span>
                         </div>
                         <div className="flex justify-between items-center text-muted-foreground">
                           <span>Last Purchase:</span>
-                          <span className="text-[11px] tabular-nums">
+                          <span className="text-[11px] font-mono tabular-nums text-foreground/90">
                             {daysSinceLastPurchase} days ago
                           </span>
                         </div>
@@ -154,15 +159,15 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
 
                       {/* Churn Probability Visual Meter */}
                       <div className="space-y-1 pt-1">
-                        <div className="w-full bg-destructive/15 h-1.5 rounded-full overflow-hidden">
+                        <div className="w-full bg-red-950/60 h-1.5 rounded-full overflow-hidden border border-red-900/40">
                           <div
-                            className="bg-destructive h-full rounded-full"
+                            className="bg-red-400 h-full rounded-full"
                             style={{ width: `${customer.churnProbability * 100}%` }}
                           />
                         </div>
-                        <div className="text-[10px] text-muted-foreground flex justify-between">
-                          <span>Risk Score: {customer.churnProbability.toFixed(2)}</span>
-                          <span>{exposureShareOfCohort}% of total cohort</span>
+                        <div className="text-[10px] text-muted-foreground flex justify-between font-mono">
+                          <span>Risk: {customer.churnProbability.toFixed(2)}</span>
+                          <span>{exposureShareOfCohort}% of cohort</span>
                         </div>
                       </div>
                     </div>
@@ -171,10 +176,10 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
                       variant="outline"
                       size="sm"
                       onClick={() => navigate(`/customers/${customer.id}`)}
-                      className="w-full text-xs h-7 gap-1.5 cursor-pointer mt-2"
+                      className="w-full text-xs h-7 gap-1.5 cursor-pointer mt-2 bg-surface border-border text-foreground hover:bg-surface-elevated"
                       aria-label={`Open customer profile for ${customer.name}`}
                     >
-                      Open Profile
+                      <span>Open Profile</span>
                       <ExternalLink className="h-3 w-3" />
                     </Button>
                   </div>
@@ -196,7 +201,7 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
               {data.outperformers.map(({ customer, segmentAverageClv, outperformancePercent }) => (
                 <div
                   key={customer.id}
-                  className="rounded-lg border border-primary/20 bg-primary/5 p-3.5 flex flex-col justify-between space-y-3 hover:border-primary/50 transition-colors"
+                  className="rounded-lg border border-border bg-surface-elevated/40 p-3.5 flex flex-col justify-between space-y-3 hover:border-border-strong transition-colors"
                 >
                   <div className="space-y-2">
                     <div className="flex items-start justify-between gap-2">
@@ -208,27 +213,27 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
                           {customer.company}
                         </span>
                       </div>
-                      <Badge variant="teal" className="text-[10px]">
+                      <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded border border-border bg-surface text-foreground">
                         +{outperformancePercent}%
-                      </Badge>
+                      </span>
                     </div>
 
                     <div className="space-y-1 text-xs pt-1">
                       <div className="flex justify-between items-center text-muted-foreground">
                         <span>Predicted CLV:</span>
-                        <strong className="text-foreground font-semibold tabular-nums">
+                        <strong className="text-foreground font-semibold font-mono tabular-nums">
                           {formatCurrency(customer.predictedClv)}
                         </strong>
                       </div>
                       <div className="flex justify-between items-center text-muted-foreground">
                         <span>Segment Mean:</span>
-                        <span className="text-muted-foreground tabular-nums">
+                        <span className="text-muted-foreground font-mono tabular-nums">
                           {formatCurrency(segmentAverageClv)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center text-muted-foreground">
                         <span>Total Orders:</span>
-                        <span className="font-semibold text-foreground tabular-nums">
+                        <span className="font-semibold text-foreground font-mono tabular-nums">
                           {customer.totalOrders}
                         </span>
                       </div>
@@ -239,10 +244,10 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
                     variant="outline"
                     size="sm"
                     onClick={() => navigate(`/customers/${customer.id}`)}
-                    className="w-full text-xs h-7 gap-1.5 cursor-pointer"
+                    className="w-full text-xs h-7 gap-1.5 cursor-pointer bg-surface border-border text-foreground hover:bg-surface-elevated"
                     aria-label={`Open customer profile for ${customer.name}`}
                   >
-                    View Account
+                    <span>View Account</span>
                     <ExternalLink className="h-3 w-3" />
                   </Button>
                 </div>
@@ -263,12 +268,12 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
               {data.dormantAccounts.map(({ customer, churnProbability }) => (
                 <div
                   key={customer.id}
-                  className="rounded-lg border border-border bg-muted/20 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-border-strong transition-colors"
+                  className="rounded-lg border border-border bg-surface-elevated/40 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-border-strong transition-colors"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <h4 className="text-xs font-semibold text-foreground">{customer.name}</h4>
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline" className="text-[10px] font-mono">
                         {customer.segment}
                       </Badge>
                       <Badge variant="warning" className="text-[10px]">
@@ -277,11 +282,13 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
                     </div>
                     <p className="text-[11px] text-muted-foreground">
                       {customer.company} • Last purchase: {customer.lastPurchaseDate} • Churn Prob:{' '}
-                      {formatPercent(churnProbability * 100, 0)}
+                      <span className="font-mono text-amber-400 font-medium">
+                        {formatPercent(churnProbability * 100, 0)}
+                      </span>
                     </p>
                     <div className="text-xs text-foreground font-medium pt-0.5">
                       Predicted CLV:{' '}
-                      <span className="tabular-nums font-semibold">
+                      <span className="tabular-nums font-semibold font-mono">
                         {formatCurrency(customer.predictedClv)}
                       </span>{' '}
                       (Historical Spend: {formatCurrency(customer.historicalRevenue)})
@@ -292,10 +299,10 @@ export function RetentionOpportunitiesSection({ data }: RetentionOpportunitiesSe
                     variant="outline"
                     size="sm"
                     onClick={() => navigate(`/customers/${customer.id}`)}
-                    className="h-7 text-xs gap-1 cursor-pointer shrink-0"
+                    className="h-7 text-xs gap-1 cursor-pointer shrink-0 bg-surface border-border text-foreground hover:bg-surface-elevated"
                     aria-label={`View dormant account ${customer.name}`}
                   >
-                    Review Account
+                    <span>Review Account</span>
                     <ExternalLink className="h-3 w-3" />
                   </Button>
                 </div>

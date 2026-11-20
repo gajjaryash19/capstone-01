@@ -1,4 +1,5 @@
-import { Users, DollarSign, ShieldAlert, Award } from 'lucide-react'
+import { memo } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 import { Card } from '@/components/ui/Card'
 import { formatCurrency, formatNumber } from '@/lib/formatters'
 import type { CustomerDirectoryKpiSummary } from '../types'
@@ -9,83 +10,82 @@ interface CustomerKpiCardsProps {
   isFiltered?: boolean
 }
 
-export function CustomerKpiCards({
+function CustomerKpiCardsComponent({
   kpis,
   filteredCount,
   isFiltered = false,
 }: CustomerKpiCardsProps) {
+  const shouldReduceMotion = useReducedMotion()
+
   const cards = [
     {
       id: 'kpi-total-customers',
       title: 'Total Customers',
       value: formatNumber(kpis.totalCustomers),
       context: isFiltered
-        ? `${formatNumber(filteredCount ?? 0)} matching active filters`
-        : 'Enterprise & B2B cohort accounts',
-      icon: Users,
+        ? `${formatNumber(filteredCount ?? 0)} accounts match active filters`
+        : 'Total active customers',
     },
     {
       id: 'kpi-high-value',
       title: 'High-Value Customers',
       value: formatNumber(kpis.highValueCustomers),
       context: 'Predicted CLV ≥ $10,000',
-      icon: Award,
     },
     {
       id: 'kpi-at-risk',
       title: 'At-Risk Customers',
       value: formatNumber(kpis.atRiskCustomers),
-      context: 'High churn propensity (>65%)',
-      icon: ShieldAlert,
+      context: '>65% estimated churn risk',
       highlightRisk: true,
     },
     {
       id: 'kpi-avg-clv',
-      title: 'Average Customer CLV',
+      title: 'Average Predicted CLV',
       value: formatCurrency(kpis.averageClv),
-      context: 'Cohort predicted baseline',
-      icon: DollarSign,
+      context: 'Average across all accounts',
     },
   ]
 
   return (
-    <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-      {cards.map((card) => {
-        const Icon = card.icon
-        return (
-          <Card
-            key={card.id}
-            className="p-3 sm:p-4 flex flex-col justify-between hover:border-border-strong transition-colors bg-card"
-          >
+    <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
+      {cards.map((card, idx) => (
+        <motion.div
+          key={card.id}
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: idx * 0.05 }}
+          className="min-w-0"
+        >
+          <Card className="h-full p-4 sm:p-5 flex flex-col justify-between hover:border-border-strong hover:bg-surface-elevated/30 transition-all duration-200 group">
             <div>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground leading-snug">
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground leading-snug">
                   {card.title}
                 </span>
-                <div
-                  className={`rounded-md p-1.5 shrink-0 ${
-                    card.highlightRisk
-                      ? 'bg-destructive/10 text-destructive'
-                      : 'bg-accent/60 text-primary'
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                </div>
+                {card.highlightRisk && (
+                  <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono font-medium border border-destructive/30 bg-destructive/10 text-destructive">
+                    Risk Alert
+                  </span>
+                )}
               </div>
 
-              <div className="mt-2">
-                <div className="text-xl sm:text-2xl font-bold tracking-tight tabular-nums text-foreground">
+              <div className="mt-3">
+                <div className="text-2xl sm:text-3xl font-semibold tracking-tight tabular-nums text-foreground font-mono">
                   {card.value}
                 </div>
               </div>
             </div>
 
-            <div className="mt-2 pt-2 border-t border-border/60 text-[11px] text-muted-foreground leading-normal truncate">
+            <div className="mt-3 pt-2.5 border-t border-border/50 text-[11px] text-muted-foreground leading-relaxed">
               {card.context}
             </div>
           </Card>
-        )
-      })}
+        </motion.div>
+      ))}
     </div>
   )
 }
+
+export const CustomerKpiCards = memo(CustomerKpiCardsComponent)
+export default CustomerKpiCards

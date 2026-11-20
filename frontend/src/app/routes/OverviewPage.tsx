@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react'
-import { motion } from 'motion/react'
-import { RefreshCw, Download, Check, Info } from 'lucide-react'
+import { useState, useMemo, useCallback } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
+import { RefreshCw, Download, Check, Cpu } from 'lucide-react'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { getStaggerContainer, getItemVariants } from '@/styles/motion'
 import {
   MOCK_CLV_OVERVIEW_DATA,
   OverviewFilterBar,
@@ -24,9 +25,10 @@ export function OverviewPage() {
   const [lastRefreshedTime, setLastRefreshedTime] = useState<string>('Just now')
   const [exportSuccess, setExportSuccess] = useState(false)
 
+  const shouldReduceMotion = useReducedMotion()
   const data = MOCK_CLV_OVERVIEW_DATA
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
     setTimeout(() => {
       setIsRefreshing(false)
@@ -34,8 +36,8 @@ export function OverviewPage() {
       setLastRefreshedTime(
         now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       )
-    }, 600)
-  }
+    }, 500)
+  }, [])
 
   // Filter segments dynamically based on selected cohort tier
   const displayedSegments = useMemo(() => {
@@ -88,7 +90,7 @@ export function OverviewPage() {
             value: '$18,450',
             numericValue: 18450,
             change: '+18.4%',
-            period: 'Enterprise VIP Tier',
+            period: 'Enterprise Tier Benchmark',
             secondaryContext: 'Benchmark: $14,200 (+29.9% above peers)',
           }
         }
@@ -98,7 +100,7 @@ export function OverviewPage() {
             value: '$4,275',
             numericValue: 4275,
             change: '+7.8%',
-            period: 'Mid-Market Tier',
+            period: 'Mid-Market Tier Benchmark',
             secondaryContext: 'Benchmark: $3,900 (+9.6% above peers)',
           }
         }
@@ -108,7 +110,7 @@ export function OverviewPage() {
             value: '$1,820',
             numericValue: 1820,
             change: '+22.1%',
-            period: 'Growth & Standard Tiers',
+            period: 'Growth & Standard Benchmark',
             secondaryContext: 'Benchmark: $1,450 (+25.5% above peers)',
           }
         }
@@ -137,7 +139,7 @@ export function OverviewPage() {
           case 'all':
             return {
               ...kpi,
-              title: '36-Month Lifetime Potential',
+              title: '36-Month Cumulative Lifespan',
               value: '$42.84M',
               numericValue: 42840000,
               period: '36-month cumulative lifespan',
@@ -161,7 +163,7 @@ export function OverviewPage() {
   }, [segmentFilter, timeHorizon, data.kpis])
 
   // Export current filtered dashboard matrix as clean CSV
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     try {
       const headers = [
         'Cohort Name',
@@ -185,7 +187,7 @@ export function OverviewPage() {
       const csvContent =
         'data:text/csv;charset=utf-8,' +
         [
-          `# Valence CLV Summary Report (Horizon: ${timeHorizon.toUpperCase()} | Segment: ${segmentFilter.toUpperCase()})`,
+          `# Valora Customer Intelligence Summary Report (Horizon: ${timeHorizon.toUpperCase()} | Segment: ${segmentFilter.toUpperCase()})`,
           `# Generated: ${new Date().toISOString()}`,
           headers.join(','),
           ...rows.map((r) => r.join(',')),
@@ -204,104 +206,136 @@ export function OverviewPage() {
     } catch {
       // Fallback silently
     }
-  }
+  }, [displayedSegments, timeHorizon, segmentFilter])
+
+  const containerVariants = getStaggerContainer(shouldReduceMotion, 0.04)
+  const itemVariants = getItemVariants(shouldReduceMotion)
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      className="space-y-4 sm:space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-5 sm:space-y-6 min-w-0"
     >
       {/* Page Title & Context Header */}
-      <PageHeader
-        title="Customer Lifetime Value Intelligence"
-        description="Predictive CLV trajectories, cohort retention stability, and revenue concentration signals."
-        badge={
-          <Badge variant="teal" dot className="shrink-0 font-medium">
-            Demo Dataset • BG/NBD ML
-          </Badge>
-        }
-        actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="hidden xl:inline text-[11px] text-muted-foreground mr-1 tabular-nums">
-              Refreshed: {lastRefreshedTime}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="gap-1.5"
-              aria-label="Refresh metrics"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span>{isRefreshing ? 'Refreshing...' : 'Refresh Metrics'}</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-              className="gap-1.5 hidden sm:inline-flex cursor-pointer"
-              aria-label="Export summary CSV"
-            >
-              {exportSuccess ? (
-                <>
-                  <Check className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>Exported CSV</span>
-                </>
-              ) : (
-                <>
-                  <Download className="h-3.5 w-3.5" />
-                  <span>Export Summary</span>
-                </>
-              )}
-            </Button>
-          </div>
-        }
-      />
+      <motion.div variants={itemVariants}>
+        <PageHeader
+          title="Customer Lifetime Value"
+          description="Track lifetime value trends, retention rates, and revenue across customer segments."
+          badge={
+            <Badge variant="neutral" dot className="shrink-0 font-medium">
+              Sample Data • BG/NBD Model
+            </Badge>
+          }
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="hidden xl:inline text-[11px] text-muted-foreground mr-1 tabular-nums font-mono">
+                Refreshed: {lastRefreshedTime}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                loading={isRefreshing}
+                className="gap-1.5 cursor-pointer"
+                aria-label="Refresh metrics"
+              >
+                {!isRefreshing && <RefreshCw className="h-3.5 w-3.5" />}
+                <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExport}
+                className="gap-1.5 hidden sm:inline-flex cursor-pointer"
+                aria-label="Export summary CSV"
+              >
+                {exportSuccess ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-foreground" />
+                    <span>Exported CSV</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-3.5 w-3.5" />
+                    <span>Export CSV</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          }
+        />
+      </motion.div>
 
-      {/* Demo / Mock Data Informational Callout */}
-      <div className="flex items-center justify-between gap-3 rounded-md bg-muted/40 border border-border/70 px-3 py-1.5 sm:px-3.5 sm:py-2 text-[11px] sm:text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0" />
-          <span>
-            <strong className="text-foreground font-medium">
-              Deterministic Evaluation Environment:
-            </strong>{' '}
-            Analytical metrics and predictions are synthetically generated for testing.
+      {/* Model & Evaluation Environment Bar */}
+      <motion.div
+        variants={itemVariants}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 rounded-lg bg-surface-elevated/70 border border-border/80 px-3.5 py-2 text-xs text-muted-foreground"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <Cpu className="h-3.5 w-3.5 text-foreground/80 shrink-0" />
+          <span className="truncate">
+            <strong className="text-foreground font-semibold">Demo Mode:</strong> Displaying sample
+            customer metrics modeled with BG/NBD and Gamma-Gamma algorithms.
           </span>
         </div>
-        <span className="hidden md:inline font-mono text-[10px] text-muted-foreground/80 shrink-0">
-          MAPE: {data.modelMetadata.mapeAccuracy} | Cohort:{' '}
-          {data.modelMetadata.trainingCohortSize.toLocaleString()}
-        </span>
-      </div>
+        <div className="flex items-center gap-3 font-mono text-[11px] shrink-0">
+          <span className="tabular-nums">
+            MAPE: <strong className="text-foreground">{data.modelMetadata.mapeAccuracy}</strong>
+          </span>
+          <span className="text-border" aria-hidden="true">
+            |
+          </span>
+          <span className="tabular-nums">
+            Cohort:{' '}
+            <strong className="text-foreground">
+              {data.modelMetadata.trainingCohortSize.toLocaleString()}
+            </strong>
+          </span>
+          <span className="text-border hidden md:inline" aria-hidden="true">
+            |
+          </span>
+          <span className="hidden md:inline text-muted-foreground">
+            {data.modelMetadata.version}
+          </span>
+        </div>
+      </motion.div>
 
-      {/* Date & Segment Filter Controls */}
-      <OverviewFilterBar
-        timeHorizon={timeHorizon}
-        onTimeHorizonChange={setTimeHorizon}
-        segmentFilter={segmentFilter}
-        onSegmentFilterChange={setSegmentFilter}
-        modelVersion={data.modelMetadata.version}
-        modelAccuracy={data.modelMetadata.mapeAccuracy}
-      />
+      {/* Filter Controls: Time Horizon + Segment Cohort */}
+      <motion.div variants={itemVariants}>
+        <OverviewFilterBar
+          timeHorizon={timeHorizon}
+          onTimeHorizonChange={setTimeHorizon}
+          segmentFilter={segmentFilter}
+          onSegmentFilterChange={setSegmentFilter}
+          modelVersion={data.modelMetadata.version}
+          modelAccuracy={data.modelMetadata.mapeAccuracy}
+        />
+      </motion.div>
 
-      {/* High-Level CLV KPIs */}
-      <ClvKpiGrid kpis={displayedKpis} />
+      {/* High-Level CLV Key Performance Indicators */}
+      <motion.section variants={itemVariants} aria-label="Key Performance Indicators">
+        <ClvKpiGrid kpis={displayedKpis} />
+      </motion.section>
 
-      {/* Visualization Grid: CLV Trajectory + Value Concentration */}
-      <div className="grid gap-5 sm:gap-6 grid-cols-1 xl:grid-cols-3">
+      {/* Primary Visualizations: Trajectory + Pareto Distribution */}
+      <motion.div
+        variants={itemVariants}
+        className="grid gap-5 sm:gap-6 grid-cols-1 xl:grid-cols-3 min-w-0"
+      >
         <ClvTrajectoryChart data={displayedTrajectory} />
         <ValueDistributionChart tiers={data.tierDistribution} />
-      </div>
+      </motion.div>
 
-      {/* Operational Matrix & Actionable Decisions Grid */}
-      <div className="grid gap-5 sm:gap-6 grid-cols-1 xl:grid-cols-3">
+      {/* Operational Matrix: Segment Health + Actionable Decisions */}
+      <motion.div
+        variants={itemVariants}
+        className="grid gap-5 sm:gap-6 grid-cols-1 xl:grid-cols-3 min-w-0 items-start"
+      >
         <SegmentHealthTable segments={displayedSegments} />
         <ActionableInsightsCard insights={displayedInsights} />
-      </div>
+      </motion.div>
     </motion.div>
   )
 }

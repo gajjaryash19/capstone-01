@@ -15,14 +15,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules/recharts')) {
-            return 'vendor-charts'
+          if (id.includes('node_modules/@supabase')) {
+            return 'vendor-supabase'
           }
-          if (id.includes('node_modules/motion')) {
-            return 'vendor-motion'
-          }
-          if (id.includes('node_modules/@radix-ui') || id.includes('node_modules/lucide-react')) {
-            return 'vendor-ui'
+          if (id.includes('node_modules/lucide-react')) {
+            return 'vendor-icons'
           }
         },
       },

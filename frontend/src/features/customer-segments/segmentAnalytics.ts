@@ -60,19 +60,95 @@ export function calculateSegmentAnalytics(
   customers: CustomerRecord[] = MOCK_CUSTOMERS,
 ): SegmentAnalyticsDataset {
   const totalCustomers = customers.length
-  const totalRevenue = customers.reduce((sum, c) => sum + c.historicalRevenue, 0)
-  const totalClv = customers.reduce((sum, c) => sum + c.predictedClv, 0)
+  let totalRevenue = 0
+  let totalClv = 0
+
+  // Pre-initialize accumulators for each ordered segment to ensure single-pass O(N) aggregation
+  const segAcc: Record<
+    CustomerSegment,
+    {
+      count: number
+      rev: number
+      clv: number
+      orders: number
+      lowRisk: number
+      modRisk: number
+      highRisk: number
+      churnProbSum: number
+    }
+  > = {
+    Enterprise: {
+      count: 0,
+      rev: 0,
+      clv: 0,
+      orders: 0,
+      lowRisk: 0,
+      modRisk: 0,
+      highRisk: 0,
+      churnProbSum: 0,
+    },
+    'Mid-Market': {
+      count: 0,
+      rev: 0,
+      clv: 0,
+      orders: 0,
+      lowRisk: 0,
+      modRisk: 0,
+      highRisk: 0,
+      churnProbSum: 0,
+    },
+    Growth: {
+      count: 0,
+      rev: 0,
+      clv: 0,
+      orders: 0,
+      lowRisk: 0,
+      modRisk: 0,
+      highRisk: 0,
+      churnProbSum: 0,
+    },
+    Standard: {
+      count: 0,
+      rev: 0,
+      clv: 0,
+      orders: 0,
+      lowRisk: 0,
+      modRisk: 0,
+      highRisk: 0,
+      churnProbSum: 0,
+    },
+  }
+
+  // Single-pass aggregation across customers dataset
+  for (let i = 0; i < totalCustomers; i++) {
+    const c = customers[i]
+    totalRevenue += c.historicalRevenue
+    totalClv += c.predictedClv
+
+    const acc = segAcc[c.segment]
+    if (acc) {
+      acc.count++
+      acc.rev += c.historicalRevenue
+      acc.clv += c.predictedClv
+      acc.orders += c.totalOrders
+      acc.churnProbSum += c.churnProbability
+      if (c.churnRisk === 'low') acc.lowRisk++
+      else if (c.churnRisk === 'moderate') acc.modRisk++
+      else if (c.churnRisk === 'high') acc.highRisk++
+    }
+  }
+
   const averageClv = totalCustomers > 0 ? Math.round(totalClv / totalCustomers) : 0
 
   const segmentRows: SegmentMetricRow[] = ORDERED_SEGMENTS.map((segName) => {
-    const segCustomers = customers.filter((c) => c.segment === segName)
-    const count = segCustomers.length
+    const acc = segAcc[segName]
+    const count = acc.count
     const customerShare =
       totalCustomers > 0 ? Number(((count / totalCustomers) * 100).toFixed(1)) : 0
 
-    const segRev = segCustomers.reduce((sum, c) => sum + c.historicalRevenue, 0)
-    const segClv = segCustomers.reduce((sum, c) => sum + c.predictedClv, 0)
-    const segOrders = segCustomers.reduce((sum, c) => sum + c.totalOrders, 0)
+    const segRev = acc.rev
+    const segClv = acc.clv
+    const segOrders = acc.orders
 
     const avgRev = count > 0 ? Math.round(segRev / count) : 0
     const avgClv = count > 0 ? Math.round(segClv / count) : 0
@@ -82,15 +158,9 @@ export function calculateSegmentAnalytics(
     const averageOrders = count > 0 ? Number((segOrders / count).toFixed(1)) : 0
     const averageOrderValue = segOrders > 0 ? Number((segRev / segOrders).toFixed(2)) : 0
 
-    const lowRisk = segCustomers.filter((c) => c.churnRisk === 'low').length
-    const modRisk = segCustomers.filter((c) => c.churnRisk === 'moderate').length
-    const highRisk = segCustomers.filter((c) => c.churnRisk === 'high').length
+    const highRisk = acc.highRisk
     const highRiskPercentage = count > 0 ? Number(((highRisk / count) * 100).toFixed(1)) : 0
-
-    const avgChurnProb =
-      count > 0
-        ? Number((segCustomers.reduce((sum, c) => sum + c.churnProbability, 0) / count).toFixed(2))
-        : 0
+    const avgChurnProb = count > 0 ? Number((acc.churnProbSum / count).toFixed(2)) : 0
 
     const meta = SEGMENT_DEFINITIONS[segName]
 
@@ -112,9 +182,9 @@ export function calculateSegmentAnalytics(
       averageOrders,
       averageOrderValue,
       churnRiskDistribution: {
-        low: lowRisk,
-        moderate: modRisk,
-        high: highRisk,
+        low: acc.lowRisk,
+        moderate: acc.modRisk,
+        high: acc.highRisk,
       },
       highRiskCount: highRisk,
       highRiskPercentage,

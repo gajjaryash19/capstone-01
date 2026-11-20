@@ -1,8 +1,9 @@
-import { motion } from 'motion/react'
-import { Download, Check } from 'lucide-react'
+import { motion, useReducedMotion } from 'motion/react'
+import { Download, Check, Info } from 'lucide-react'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { getStaggerContainer, getItemVariants } from '@/styles/motion'
 import {
   useInsights,
   InsightKpiCards,
@@ -15,6 +16,7 @@ import {
 } from '@/features/insights'
 
 export function InsightsPage() {
+  const shouldReduceMotion = useReducedMotion()
   const {
     allInsights,
     filteredInsights,
@@ -38,62 +40,84 @@ export function InsightsPage() {
     setSelectedInsightModal,
   } = useInsights()
 
+  const containerVariants = getStaggerContainer(shouldReduceMotion, 0.04)
+  const itemVariants = getItemVariants(shouldReduceMotion)
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      className="space-y-6 max-w-7xl"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-6 max-w-7xl mx-auto"
     >
       {/* 1. Header with Data & Model Status Labels */}
-      <PageHeader
-        title="Insights & Recommendations"
-        description="Decision-oriented business observations, retention opportunities, and action playbooks derived deterministically from customer lifetime value forecasts and segment behaviors."
-        badge={
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="teal" dot className="shrink-0 font-medium text-[11px]">
-              Deterministic Rule Engine Active
-            </Badge>
-            <Badge
-              variant="outline"
-              className="shrink-0 text-muted-foreground font-mono text-[11px]"
-            >
-              36 Customer Accounts Evaluated
-            </Badge>
-          </div>
-        }
-        actions={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={exportToCsv}
-              className="gap-1.5 cursor-pointer text-xs h-8"
-              aria-label="Export insights to CSV"
-            >
-              {exportSuccess ? (
-                <>
-                  <Check className="h-3.5 w-3.5 text-emerald-600" />
-                  <span className="text-emerald-700 font-medium">Exported CSV</span>
-                </>
-              ) : (
-                <>
-                  <Download className="h-3.5 w-3.5" />
-                  <span>Export Insights Brief</span>
-                </>
-              )}
-            </Button>
-          </div>
-        }
-      />
+      <motion.div variants={itemVariants}>
+        <PageHeader
+          title="Insights & Recommendations"
+          description="Key opportunities, retention risks, and recommended actions based on your customer value data."
+          badge={
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="neutral" dot className="shrink-0 font-medium text-[11px]">
+                Automated Analysis Active
+              </Badge>
+              <Badge
+                variant="outline"
+                className="shrink-0 text-muted-foreground font-mono text-[11px] bg-surface"
+              >
+                36 Customers Evaluated
+              </Badge>
+            </div>
+          }
+          actions={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToCsv}
+                className="gap-1.5 cursor-pointer text-xs h-8 bg-surface border-border text-foreground hover:bg-surface-elevated font-medium"
+                aria-label="Export insights to CSV"
+              >
+                {exportSuccess ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-foreground" />
+                    <span className="text-foreground font-medium">Exported CSV</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>Export CSV</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          }
+        />
+      </motion.div>
+
+      {/* Evaluation Cohort Informational Callout */}
+      <motion.div
+        variants={itemVariants}
+        className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-surface border border-border px-3.5 py-2.5 text-xs text-muted-foreground"
+      >
+        <div className="flex items-center gap-2">
+          <Info className="h-4 w-4 text-muted-foreground shrink-0" />
+          <span>
+            <strong className="text-foreground font-medium">Demo Data:</strong> Insights and
+            recommendations calculated from 36 sample customer accounts and CLV models.
+          </span>
+        </div>
+        <span className="text-[11px] font-mono text-muted-foreground/80 whitespace-nowrap hidden sm:inline">
+          Automated Analysis
+        </span>
+      </motion.div>
 
       {/* 2. Top-Level Analytical KPI Summary */}
-      <section aria-label="Key Analytical Indicators">
+      <motion.section variants={itemVariants} aria-label="Key Analytical Indicators">
         <InsightKpiCards summary={kpiSummary} />
-      </section>
+      </motion.section>
 
       {/* 3. Interactive Functional Filters */}
-      <section aria-label="Insight Filters">
+      <motion.section variants={itemVariants} aria-label="Insight Filters">
         <InsightFilterBar
           categoryFilter={categoryFilter}
           priorityFilter={priorityFilter}
@@ -108,26 +132,30 @@ export function InsightsPage() {
           onSearchChange={setSearchQuery}
           onResetFilters={resetFilters}
         />
-      </section>
+      </motion.section>
 
       {/* 4. Priority Business Insights */}
-      <PriorityInsightsSection
-        insights={filteredInsights}
-        onInspectRule={(insight) => setSelectedInsightModal(insight)}
-      />
+      <motion.div variants={itemVariants}>
+        <PriorityInsightsSection
+          insights={filteredInsights}
+          onInspectRule={(insight) => setSelectedInsightModal(insight)}
+        />
+      </motion.div>
 
       {/* 5. Customer Retention Opportunities */}
-      <section aria-label="Customer Retention Deep Dive">
+      <motion.section variants={itemVariants} aria-label="Customer Retention Deep Dive">
         <RetentionOpportunitiesSection data={retentionOpportunities} />
-      </section>
+      </motion.section>
 
       {/* 6. Segment Value Contribution & Skew */}
-      <section aria-label="Segment Skew and Value Analysis">
+      <motion.section variants={itemVariants} aria-label="Segment Skew and Value Analysis">
         <SegmentInsightsSection segmentData={segmentComparisons} />
-      </section>
+      </motion.section>
 
       {/* 7. Action Playbook Recommendations */}
-      <ActionRecommendationsSection recommendations={filteredRecommendations} />
+      <motion.section variants={itemVariants} aria-label="Decision Action Playbooks">
+        <ActionRecommendationsSection recommendations={filteredRecommendations} />
+      </motion.section>
 
       {/* 8. Mathematical Formula & Data Lineage Audit Modal */}
       <InsightDetailModal

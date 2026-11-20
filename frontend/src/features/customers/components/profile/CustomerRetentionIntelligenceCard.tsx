@@ -1,6 +1,7 @@
-import { ShieldAlert, Layers, Activity, AlertCircle } from 'lucide-react'
+import { ShieldAlert, Layers, Activity, AlertCircle, ShieldCheck } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
+import { SEGMENT_DEFINITIONS } from '@/features/customer-segments/segmentAnalytics'
+import { MOCK_CUSTOMERS } from '../../mockData'
 import type { CustomerRecord } from '../../types'
 
 interface CustomerRetentionIntelligenceCardProps {
@@ -10,41 +11,59 @@ interface CustomerRetentionIntelligenceCardProps {
 export function CustomerRetentionIntelligenceCard({
   customer,
 }: CustomerRetentionIntelligenceCardProps) {
-  const getRiskVariant = (risk: string) => {
+  const segmentMeta = SEGMENT_DEFINITIONS[customer.segment]
+
+  // Calculate position in segment
+  const segmentPeers = MOCK_CUSTOMERS.filter((c) => c.segment === customer.segment).sort(
+    (a, b) => b.predictedClv - a.predictedClv,
+  )
+  const segmentRank = segmentPeers.findIndex((c) => c.id === customer.id) + 1
+  const totalInSegment = segmentPeers.length
+
+  const getRiskDetails = (risk: string) => {
     switch (risk) {
-      case 'low':
-        return 'teal' as const
-      case 'moderate':
-        return 'warning' as const
       case 'high':
+        return {
+          label: 'HIGH CHURN RISK',
+          color: 'text-red-400',
+          badgeClass: 'border-red-500/30 bg-red-500/10 text-red-400',
+          icon: ShieldAlert,
+          interpretation: 'High churn risk (>65%). Recommend proactive check-in or outreach.',
+        }
+      case 'moderate':
+        return {
+          label: 'MODERATE CHURN RISK',
+          color: 'text-amber-400',
+          badgeClass: 'border-amber-500/30 bg-amber-500/10 text-amber-400',
+          icon: ShieldAlert,
+          interpretation: 'Moderate churn risk (30–65%). Time between orders has increased.',
+        }
+      case 'low':
       default:
-        return 'destructive' as const
+        return {
+          label: 'LOW CHURN RISK',
+          color: 'text-muted-foreground',
+          badgeClass: 'border-border bg-muted/40 text-muted-foreground',
+          icon: ShieldCheck,
+          interpretation: 'Low churn risk (<30%). Regular orders and steady purchase activity.',
+        }
     }
   }
 
-  const getSegmentDescription = (segment: string) => {
-    switch (segment) {
-      case 'Enterprise':
-        return 'Top 5% revenue cohort characterized by contract stability and high monetary velocity.'
-      case 'Mid-Market':
-        return 'Core growth cohort with consistent purchase intervals and stable unit economics.'
-      case 'Growth':
-        return 'Early-tenure high-velocity accounts demonstrating expansion potential.'
-      case 'Standard':
-      default:
-        return 'Baseline transactional accounts with periodic order frequency.'
-    }
-  }
+  const riskDetails = getRiskDetails(customer.churnRisk)
+  const RiskIcon = riskDetails.icon
 
   return (
-    <Card>
+    <Card className="bg-surface border-border">
       <CardHeader className="pb-3 border-b border-border">
         <div className="flex items-center gap-2">
-          <ShieldAlert className="h-4 w-4 text-primary" />
-          <CardTitle>CLV & Retention Intelligence</CardTitle>
+          <ShieldAlert className="h-4 w-4 text-foreground/80" />
+          <CardTitle className="text-base font-semibold text-foreground">
+            Retention & Segment Intelligence
+          </CardTitle>
         </div>
-        <CardDescription>
-          Cohort classification, churn propensity metrics, and retention indicators.
+        <CardDescription className="text-xs text-muted-foreground">
+          Cohort tier classification, churn propensity metrics, and strategic playbook alignment.
         </CardDescription>
       </CardHeader>
 
@@ -52,79 +71,84 @@ export function CustomerRetentionIntelligenceCard({
         {/* Retention & Churn Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Churn Risk Score */}
-          <div className="rounded-lg border border-border/70 bg-card p-3.5 space-y-2">
+          <div className="rounded-lg border border-border bg-surface-elevated/40 p-3.5 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <ShieldAlert
-                  className={`h-3.5 w-3.5 ${
-                    customer.churnRisk === 'high'
-                      ? 'text-destructive'
-                      : customer.churnRisk === 'moderate'
-                        ? 'text-amber-500'
-                        : 'text-emerald-500'
-                  }`}
-                />
-                Churn Risk Classification
+                <RiskIcon className={`h-3.5 w-3.5 ${riskDetails.color}`} />
+                Churn Propensity
               </span>
-              <Badge variant={getRiskVariant(customer.churnRisk)} dot>
-                {customer.churnRisk.toUpperCase()} RISK
-              </Badge>
+              <span
+                className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium border ${riskDetails.badgeClass}`}
+              >
+                {riskDetails.label}
+              </span>
             </div>
 
             <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold tabular-nums text-foreground">
+              <div className="text-2xl font-bold font-mono tabular-nums text-foreground">
                 {(customer.churnProbability * 100).toFixed(1)}%
               </div>
-              <span className="text-xs text-muted-foreground">inactivity propensity</span>
+              <span className="text-xs text-muted-foreground">inactivity probability</span>
             </div>
 
             <p className="text-[11px] text-muted-foreground leading-normal">
-              Estimated statistical probability of customer dormancy over the next 90-day horizon as
-              modeled by BG/NBD churn equations.
+              {riskDetails.interpretation}
             </p>
           </div>
 
           {/* Segment Classification */}
-          <div className="rounded-lg border border-border/70 bg-card p-3.5 space-y-2">
+          <div className="rounded-lg border border-border bg-surface-elevated/40 p-3.5 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Layers className="h-3.5 w-3.5 text-primary" />
-                Assigned Value Segment
+                <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                Segment Tier
               </span>
-              <span className="font-semibold text-xs text-foreground">{customer.segment}</span>
+              <span className="font-mono text-xs text-muted-foreground">
+                Rank #{segmentRank} of {totalInSegment}
+              </span>
             </div>
 
             <div className="flex items-baseline gap-2">
-              <div className="text-base font-bold text-foreground">
-                Cohort Tier: {customer.segment}
-              </div>
+              <div className="text-base font-bold text-foreground">{customer.segment} Tier</div>
             </div>
 
             <p className="text-[11px] text-muted-foreground leading-normal">
-              {getSegmentDescription(customer.segment)}
+              {segmentMeta.description}
             </p>
           </div>
         </div>
 
-        {/* Account Status Telemetry */}
-        <div className="rounded-md border border-border/60 bg-muted/20 p-3 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <Activity className="h-3.5 w-3.5 text-primary" />
-            <span className="text-muted-foreground">Account Health State:</span>
-            <span className="font-semibold text-foreground capitalize">{customer.status}</span>
+        {/* Strategic Retention Focus */}
+        <div className="rounded-lg border border-border bg-surface-elevated/40 p-3.5 space-y-1.5">
+          <div className="text-[11px] font-semibold text-foreground uppercase tracking-wider">
+            Segment Strategic Playbook ({customer.segment})
           </div>
-          <span className="text-[11px] text-muted-foreground">Evaluation Cohort Sync: Active</span>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {segmentMeta.strategicFocus}
+          </p>
         </div>
 
-        {/* Transparent Notice Regarding Unavailable Metrics */}
-        <div className="flex items-start gap-2.5 rounded-md bg-muted/40 border border-border/80 p-3 text-xs text-muted-foreground">
+        {/* Account Status Telemetry */}
+        <div className="rounded-md border border-border bg-muted/20 p-3 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2">
+            <Activity className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-muted-foreground">Account Lifecycle State:</span>
+            <span className="font-semibold text-foreground capitalize">{customer.status}</span>
+          </div>
+          <span className="text-[11px] font-mono text-muted-foreground">
+            Evaluation Sync: Nominal
+          </span>
+        </div>
+
+        {/* Transparent Model Disclaimer */}
+        <div className="flex items-start gap-2.5 rounded-md bg-muted/30 border border-border/80 p-3 text-xs text-muted-foreground">
           <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
           <div className="space-y-0.5 leading-relaxed text-[11px]">
-            <p className="font-medium text-foreground">Model Attribution & Explanations</p>
+            <p className="font-medium text-foreground">Statistical Inactivity Attribution</p>
             <p>
-              Detailed ML feature importance scores (SHAP values) and automated customer success
-              intervention playbooks are currently unavailable in this evaluation environment. They
-              will be populated upon CRM webhook integration.
+              Churn probability is evaluated over a forward 90-day observation window modeled by
+              Pareto/NBD and BG/NBD probability density functions using order recency and tenure
+              deltas.
             </p>
           </div>
         </div>

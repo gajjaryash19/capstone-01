@@ -35,9 +35,9 @@ const tierOptions: { label: string; value: PredictionTierFilter }[] = [
 ]
 
 const deltaOptions: { label: string; value: DeltaFilter }[] = [
-  { label: 'All Growth Paths', value: 'all' },
-  { label: 'Projected Expansion (+)', value: 'expansion' },
-  { label: 'Projected Contraction (–)', value: 'contraction' },
+  { label: 'All Growth Trends', value: 'all' },
+  { label: 'Projected Growth (+)', value: 'expansion' },
+  { label: 'Projected Decline (–)', value: 'contraction' },
 ]
 
 export function PredictionFilterBar({
@@ -55,7 +55,7 @@ export function PredictionFilterBar({
   totalAll,
 }: PredictionFilterBarProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3 sm:p-4 shadow-2xs">
+    <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-3.5 sm:p-4 shadow-2xs">
       {/* Search and Count Row */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
@@ -64,16 +64,16 @@ export function PredictionFilterBar({
             type="search"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search prediction records by customer name, company, email, or ID..."
+            placeholder="Search accounts by name, company, email, or ID..."
             aria-label="Search prediction records"
-            className="pl-9 pr-8 h-9 text-xs"
+            className="pl-9 pr-8 h-9 text-xs bg-surface-elevated/70 border-border"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => onSearchChange('')}
               aria-label="Clear search query"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground cursor-pointer transition-transform duration-100 active:scale-90"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -81,7 +81,7 @@ export function PredictionFilterBar({
         </div>
 
         <div className="flex items-center justify-between sm:justify-end gap-2 text-xs">
-          <span className="text-muted-foreground tabular-nums">
+          <span className="text-muted-foreground font-mono text-[11px] tabular-nums">
             Showing <strong className="text-foreground font-semibold">{totalFiltered}</strong> of{' '}
             <strong className="text-foreground font-semibold">{totalAll}</strong> accounts
           </span>
@@ -90,7 +90,7 @@ export function PredictionFilterBar({
               variant="outline"
               size="sm"
               onClick={onResetFilters}
-              className="h-8 gap-1 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+              className="h-8 gap-1 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer bg-surface-elevated border-border"
               aria-label="Reset all prediction filters"
             >
               <RotateCcw className="h-3 w-3" />
@@ -101,8 +101,8 @@ export function PredictionFilterBar({
       </div>
 
       {/* Filter Dropdowns */}
-      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/60">
-        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mr-1 shrink-0">
+      <div className="flex flex-wrap items-center gap-2 pt-2.5 border-t border-border/60">
+        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mr-1 shrink-0">
           Filters:
         </span>
 
@@ -113,7 +113,7 @@ export function PredictionFilterBar({
             aria-label="Filter by Customer Segment"
             value={segmentFilter}
             onChange={(e) => onSegmentChange(e.target.value as 'all' | CustomerSegment)}
-            className="h-8 rounded-md border border-border bg-card px-2.5 py-1 text-xs text-foreground shadow-2xs hover:border-border-strong focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+            className="h-8 rounded-md border border-border bg-surface-elevated px-2.5 py-1 text-xs text-foreground shadow-2xs hover:border-border-strong focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
           >
             {segmentOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -130,7 +130,7 @@ export function PredictionFilterBar({
             aria-label="Filter by Predicted CLV Tier"
             value={tierFilter}
             onChange={(e) => onTierChange(e.target.value as PredictionTierFilter)}
-            className="h-8 rounded-md border border-border bg-card px-2.5 py-1 text-xs text-foreground shadow-2xs hover:border-border-strong focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+            className="h-8 rounded-md border border-border bg-surface-elevated px-2.5 py-1 text-xs text-foreground shadow-2xs hover:border-border-strong focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
           >
             {tierOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -147,7 +147,7 @@ export function PredictionFilterBar({
             aria-label="Filter by Projected Expansion Delta"
             value={deltaFilter}
             onChange={(e) => onDeltaChange(e.target.value as DeltaFilter)}
-            className="h-8 rounded-md border border-border bg-card px-2.5 py-1 text-xs text-foreground shadow-2xs hover:border-border-strong focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+            className="h-8 rounded-md border border-border bg-surface-elevated px-2.5 py-1 text-xs text-foreground shadow-2xs hover:border-border-strong focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
           >
             {deltaOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>

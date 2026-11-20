@@ -7,11 +7,11 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  Cell,
 } from 'recharts'
-import { PieChart, ArrowUpRight } from 'lucide-react'
+import { PieChart } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
-import { designTokens } from '@/styles/tokens'
+import { useChartTheme } from '@/hooks/useChartTheme'
 import { formatCurrency, formatPercent } from '@/lib/formatters'
 import type { SegmentMetricRow, CustomerSegment } from '../types'
 
@@ -36,35 +36,35 @@ function CustomRevenueTooltip({ active, payload }: CustomTooltipProps) {
   const data = payload[0].payload
 
   return (
-    <div className="rounded-lg border border-border bg-card p-3 shadow-md text-xs min-w-48">
+    <div className="rounded-lg border border-border bg-surface-elevated text-foreground p-3 shadow-lg text-xs min-w-48">
       <div className="font-semibold text-foreground border-b border-border/80 pb-1.5 mb-2 flex items-center justify-between">
         <span>{data.name} Cohort</span>
-        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+        <span className="font-mono text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
           {formatCurrency(data.totalHistoricalRevenue)}
-        </Badge>
+        </span>
       </div>
       <div className="space-y-1.5 text-muted-foreground text-[11px]">
         <div className="flex justify-between items-center">
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-slate-400" />
+            <span className="h-2 w-2 rounded-full bg-foreground/40" />
             Customer Base Share:
           </span>
-          <strong className="text-foreground font-semibold tabular-nums">
+          <strong className="text-foreground font-semibold font-mono tabular-nums">
             {formatPercent(data.customerShare)}
           </strong>
         </div>
         <div className="flex justify-between items-center">
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-primary" />
+            <span className="h-2 w-2 rounded-full bg-foreground" />
             Revenue Contribution:
           </span>
-          <strong className="text-primary font-bold tabular-nums">
+          <strong className="text-foreground font-bold font-mono tabular-nums">
             {formatPercent(data.revenueShare)}
           </strong>
         </div>
         <div className="flex justify-between items-center pt-1 border-t border-border/60">
           <span>Avg Revenue / Acct:</span>
-          <strong className="text-foreground font-semibold tabular-nums">
+          <strong className="text-foreground font-semibold font-mono tabular-nums">
             {formatCurrency(data.averageHistoricalRevenue)}
           </strong>
         </div>
@@ -78,99 +78,115 @@ export function SegmentRevenueContributionChart({
   selectedSegment,
   onSelectSegment,
 }: SegmentRevenueContributionChartProps) {
-  const chartHex = designTokens.charts.hex
+  const chartHex = useChartTheme()
 
   const chartData = segments.map((seg) => ({
     ...seg,
   }))
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col bg-surface border-border">
       <CardHeader className="pb-3 border-b border-border">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <PieChart className="h-4 w-4 text-primary" />
-            <CardTitle>Revenue Contribution vs Customer Share</CardTitle>
+            <PieChart className="h-4 w-4 text-foreground/80" />
+            <CardTitle className="text-base font-semibold text-foreground">
+              Revenue Share vs Account Share
+            </CardTitle>
           </div>
           {selectedSegment && (
-            <Badge variant="teal" dot className="text-[10px]">
-              Filtered: {selectedSegment}
-            </Badge>
+            <span className="text-[10px] font-mono text-foreground bg-surface-elevated px-2 py-0.5 rounded border border-border">
+              Cohort: {selectedSegment}
+            </span>
           )}
         </div>
-        <CardDescription className="mt-0.5">
-          Pareto value concentration: Share of customer accounts vs. share of realized revenue.
+        <CardDescription className="text-xs text-muted-foreground mt-0.5">
+          Pareto comparison of cohort volume against historical billing revenue realization.
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="pt-4 flex-1 flex flex-col justify-between space-y-3">
-        <div className="h-56 sm:h-64 w-full">
+      <CardContent className="pt-5 flex-1 flex flex-col justify-between">
+        <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{ top: 8, right: 10, left: -22, bottom: 0 }}
-              onClick={(e) => {
-                const activeLabel = e?.activeLabel as CustomerSegment | undefined
-                if (activeLabel) {
-                  onSelectSegment(selectedSegment === activeLabel ? null : activeLabel)
-                }
-              }}
-              className="cursor-pointer"
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke={chartHex.grid} vertical={false} />
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartHex.grid} />
               <XAxis
                 dataKey="name"
-                interval={0}
-                tick={{ fontSize: 10, fill: 'var(--foreground)', fontWeight: 500 }}
+                tick={{ fontSize: 11, fill: 'var(--foreground-muted)' }}
                 axisLine={{ stroke: 'var(--border)' }}
                 tickLine={false}
               />
               <YAxis
-                unit="%"
-                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
-                axisLine={{ stroke: 'var(--border)' }}
+                tickFormatter={(val: number) => `${val}%`}
+                tick={{ fontSize: 11, fill: 'var(--foreground-muted)' }}
+                axisLine={false}
                 tickLine={false}
+                width={40}
               />
               <Tooltip
                 content={<CustomRevenueTooltip />}
-                cursor={{ fill: 'var(--muted)', opacity: 0.3 }}
+                cursor={{ fill: chartHex.cursor, stroke: 'none' }}
               />
               <Legend
                 verticalAlign="top"
                 align="right"
-                wrapperStyle={{ paddingBottom: '8px', fontSize: '11px' }}
                 iconType="circle"
                 iconSize={8}
+                wrapperStyle={{ fontSize: '11px', paddingBottom: '12px' }}
               />
               <Bar
                 dataKey="customerShare"
-                name="Customer Share (%)"
-                fill="#94a3b8" // Slate-400
+                name="Account Share (%)"
+                fill={chartHex.series2}
                 radius={[4, 4, 0, 0]}
                 isAnimationActive={false}
-              />
+              >
+                {chartData.map((entry) => {
+                  const isSelected = selectedSegment === entry.name
+                  const isDimmed = selectedSegment !== null && !isSelected
+                  return (
+                    <Cell
+                      key={`share-${entry.name}`}
+                      fill={chartHex.series2}
+                      opacity={isDimmed ? 0.35 : 1}
+                      stroke={isSelected ? 'var(--foreground)' : 'var(--border)'}
+                      strokeWidth={isSelected ? 1.5 : 0.5}
+                      onClick={() => onSelectSegment(isSelected ? null : entry.name)}
+                      className="cursor-pointer transition-opacity"
+                    />
+                  )
+                })}
+              </Bar>
               <Bar
                 dataKey="revenueShare"
-                name="Revenue Contribution (%)"
-                fill={chartHex.series1} // Teal
+                name="Revenue Share (%)"
+                fill={chartHex.series1}
                 radius={[4, 4, 0, 0]}
                 isAnimationActive={false}
-              />
+              >
+                {chartData.map((entry) => {
+                  const isSelected = selectedSegment === entry.name
+                  const isDimmed = selectedSegment !== null && !isSelected
+                  return (
+                    <Cell
+                      key={`rev-${entry.name}`}
+                      fill={chartHex.series1}
+                      opacity={isDimmed ? 0.35 : 1}
+                      stroke={isSelected ? 'var(--foreground)' : 'var(--border)'}
+                      strokeWidth={isSelected ? 1.5 : 0.5}
+                      onClick={() => onSelectSegment(isSelected ? null : entry.name)}
+                      className="cursor-pointer transition-opacity"
+                    />
+                  )
+                })}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Pareto Concentration Callout */}
-        <div className="rounded-md bg-accent/40 p-2.5 sm:p-3 border border-primary/20 text-xs">
-          <div className="flex items-start gap-2">
-            <ArrowUpRight className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-            <div className="text-[11px] text-muted-foreground leading-relaxed">
-              <strong className="text-foreground font-semibold">Value Concentration:</strong> The
-              Enterprise cohort represents <strong className="text-foreground">22.2%</strong> of
-              accounts but generates <strong className="text-primary font-semibold">65.9%</strong>{' '}
-              ($116.85K) of total realized revenue.
-            </div>
-          </div>
+        <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
+          <span>Enterprise represents 22.2% of accounts but 65.9% of historical revenue</span>
+          <span className="font-mono">Pareto Metric: Nominal</span>
         </div>
       </CardContent>
     </Card>

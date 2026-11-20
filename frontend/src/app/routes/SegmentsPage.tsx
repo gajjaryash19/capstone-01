@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { Download, Check, Info, Filter, X } from 'lucide-react'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
+import { getStaggerContainer, getItemVariants } from '@/styles/motion'
 import {
   calculateSegmentAnalytics,
   SegmentSummaryCards,
@@ -23,6 +23,7 @@ const VALID_SEGMENTS: CustomerSegment[] = ['Enterprise', 'Mid-Market', 'Growth',
 export function SegmentsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [exportSuccess, setExportSuccess] = useState(false)
+  const shouldReduceMotion = useReducedMotion()
 
   // Pure deterministic calculations separate from UI
   const analyticsData = useMemo(() => calculateSegmentAnalytics(MOCK_CUSTOMERS), [])
@@ -105,7 +106,7 @@ export function SegmentsPage() {
       link.setAttribute('href', url)
       link.setAttribute(
         'download',
-        `valence_segment_analytics_${new Date().toISOString().slice(0, 10)}.csv`,
+        `valora_segment_analytics_${new Date().toISOString().slice(0, 10)}.csv`,
       )
       document.body.appendChild(link)
       link.click()
@@ -119,87 +120,97 @@ export function SegmentsPage() {
     }
   }, [analyticsData.segments])
 
+  const containerVariants = getStaggerContainer(shouldReduceMotion, 0.04)
+  const itemVariants = getItemVariants(shouldReduceMotion)
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
       className="space-y-5 sm:space-y-6 max-w-7xl mx-auto"
     >
       {/* Page Title & Context Header */}
-      <PageHeader
-        title="Customer Segmentation"
-        description="Analyze cohort behavior, lifetime value concentration, and churn vulnerability across customer tiers."
-        badge={
-          <Badge variant="teal" dot className="shrink-0 font-medium">
-            {analyticsData.summary.totalSegments} Cohorts • {analyticsData.summary.totalCustomers}{' '}
-            Accounts • BG/NBD Baseline
-          </Badge>
-        }
-        actions={
-          <div className="flex items-center gap-2">
-            {selectedSegment && (
+      <motion.div variants={itemVariants}>
+        <PageHeader
+          title="Customer Segments"
+          description="Compare customer groups by size, lifetime value, and churn risk."
+          badge={
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-xs text-muted-foreground bg-surface px-2.5 py-1 rounded-md border border-border">
+                {analyticsData.summary.totalSegments} Segments •{' '}
+                {analyticsData.summary.totalCustomers} Customers
+              </span>
+              <span className="font-mono text-xs text-foreground/80 bg-surface-elevated px-2 py-0.5 rounded border border-border">
+                BG/NBD Baseline
+              </span>
+            </div>
+          }
+          actions={
+            <div className="flex items-center gap-2">
+              {selectedSegment && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSelectSegment(null)}
+                  className="gap-1.5 cursor-pointer text-xs h-8 bg-surface border-border"
+                >
+                  <X className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span>Clear Selection</span>
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleSelectSegment(null)}
-                className="gap-1.5 cursor-pointer text-xs"
+                onClick={exportToCsv}
+                className="gap-1.5 cursor-pointer text-xs h-8 bg-surface border-border"
+                aria-label="Export segmentation metrics to CSV"
               >
-                <X className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>Clear Selection</span>
+                {exportSuccess ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-foreground" />
+                    <span>Exported CSV</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>Export CSV</span>
+                  </>
+                )}
               </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={exportToCsv}
-              className="gap-1.5 cursor-pointer text-xs"
-              aria-label="Export segmentation metrics to CSV"
-            >
-              {exportSuccess ? (
-                <>
-                  <Check className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>Exported CSV</span>
-                </>
-              ) : (
-                <>
-                  <Download className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span>Export Summary</span>
-                </>
-              )}
-            </Button>
-          </div>
-        }
-      />
+            </div>
+          }
+        />
+      </motion.div>
 
       {/* Evaluation Environment Informational Callout */}
-      <div className="flex items-center justify-between gap-3 rounded-md bg-muted/40 border border-border/70 px-3 py-1.5 sm:px-3.5 sm:py-2 text-[11px] sm:text-xs text-muted-foreground">
+      <motion.div
+        variants={itemVariants}
+        className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-surface border border-border px-3.5 py-2.5 text-xs text-muted-foreground"
+      >
         <div className="flex items-center gap-2">
-          <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0" />
+          <Info className="h-4 w-4 text-muted-foreground shrink-0" />
           <span>
-            <strong className="text-foreground font-medium">
-              Deterministic Evaluation Cohort:
-            </strong>{' '}
-            Metrics, segment aggregations, and value distributions are calculated directly from
-            centralized customer cohort data.
+            <strong className="text-foreground font-medium">Demo Data:</strong> Metrics and segment
+            distributions are calculated across 36 customer accounts.
           </span>
         </div>
-        <span className="text-[10px] text-muted-foreground whitespace-nowrap hidden md:inline">
-          Last calculated: Synchronized
-        </span>
-      </div>
+      </motion.div>
 
       {/* Segment Summary KPI Cards */}
-      <section aria-label="Segment KPI Summary">
+      <motion.section variants={itemVariants} aria-label="Segment KPI Summary">
         <SegmentSummaryCards summary={analyticsData.summary} selectedSegment={selectedSegment} />
-      </section>
+      </motion.section>
 
       {/* Cohort Quick-Filter Pill Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 p-2.5 rounded-lg bg-card border border-border">
+      <motion.div
+        variants={itemVariants}
+        className="flex flex-wrap items-center justify-between gap-2.5 p-2.5 rounded-lg bg-surface border border-border"
+      >
         <div className="flex flex-wrap items-center gap-1.5">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
-            <Filter className="h-3.5 w-3.5" />
-            <span>Filter Cohort:</span>
+            <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>Segment:</span>
           </div>
 
           <button
@@ -207,11 +218,11 @@ export function SegmentsPage() {
             onClick={() => handleSelectSegment(null)}
             className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer border ${
               selectedSegment === null
-                ? 'bg-primary text-primary-foreground border-transparent font-semibold shadow-xs'
-                : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground'
+                ? 'bg-foreground text-background font-semibold border-transparent shadow-xs'
+                : 'bg-surface-elevated text-muted-foreground border-border hover:bg-muted hover:text-foreground'
             }`}
           >
-            All Cohorts ({analyticsData.summary.totalCustomers})
+            All ({analyticsData.summary.totalCustomers})
           </button>
 
           {analyticsData.segments.map((seg) => {
@@ -223,15 +234,15 @@ export function SegmentsPage() {
                 onClick={() => handleSelectSegment(isSelected ? null : seg.name)}
                 className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer border flex items-center gap-1.5 ${
                   isSelected
-                    ? 'bg-primary text-primary-foreground border-transparent font-semibold shadow-xs'
-                    : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground'
+                    ? 'bg-foreground text-background font-semibold border-transparent shadow-xs'
+                    : 'bg-surface-elevated text-muted-foreground border-border hover:bg-muted hover:text-foreground'
                 }`}
               >
                 <span>{seg.name}</span>
                 <span
-                  className={`text-[10px] px-1 py-0.2 rounded-full ${
+                  className={`text-[10px] font-mono px-1 py-0.2 rounded-full ${
                     isSelected
-                      ? 'bg-primary-foreground/20 text-primary-foreground'
+                      ? 'bg-background/20 text-background'
                       : 'bg-muted text-muted-foreground'
                   }`}
                 >
@@ -251,16 +262,20 @@ export function SegmentsPage() {
             <button
               type="button"
               onClick={() => handleSelectSegment(null)}
-              className="text-primary hover:underline text-xs cursor-pointer font-medium"
+              className="text-foreground hover:underline text-xs cursor-pointer font-medium ml-1"
             >
               Reset
             </button>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Analytical Visualizations (2x2 Grid) */}
-      <section aria-label="Customer Segmentation Visualizations" className="space-y-4 sm:space-y-6">
+      <motion.section
+        variants={itemVariants}
+        aria-label="Customer Segmentation Visualizations"
+        className="space-y-4 sm:space-y-6"
+      >
         <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
           {/* Chart 1: Customer Base Distribution */}
           <SegmentDistributionChart
@@ -290,26 +305,26 @@ export function SegmentsPage() {
             onSelectSegment={handleSelectSegment}
           />
         </div>
-      </section>
+      </motion.section>
 
       {/* Segment Performance Comparison Table */}
-      <section aria-label="Segment Performance Table">
+      <motion.section variants={itemVariants} aria-label="Segment Performance Table">
         <SegmentPerformanceTable
           segments={analyticsData.segments}
           selectedSegment={selectedSegment}
           onSelectSegment={handleSelectSegment}
         />
-      </section>
+      </motion.section>
 
       {/* Selected Segment Drill-Down & Member Roster */}
-      <section aria-label="Selected Segment Drill-Down">
+      <motion.section variants={itemVariants} aria-label="Selected Segment Drill-Down">
         <SegmentDetailDrillDown
           selectedSegment={selectedSegment}
           segmentMetrics={selectedSegmentMetrics}
           customers={analyticsData.customers}
           onClearSelection={() => handleSelectSegment(null)}
         />
-      </section>
+      </motion.section>
     </motion.div>
   )
 }

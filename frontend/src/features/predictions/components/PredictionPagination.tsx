@@ -72,7 +72,7 @@ export function PredictionPagination({
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
             aria-label="Select prediction rows per page"
-            className="h-7 rounded-sm border border-border bg-card px-2 text-[11px] text-foreground hover:border-border-strong focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
+            className="h-7 rounded-sm border border-border bg-surface-elevated px-2 text-[11px] text-foreground hover:border-border-strong focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer font-mono"
           >
             <option value={10}>10</option>
             <option value={25}>25</option>
@@ -121,7 +121,7 @@ export function PredictionPagination({
                   'h-8 min-w-[2rem] px-2 text-xs rounded-md font-medium transition-colors cursor-pointer',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   isCurrent
-                    ? 'bg-primary text-primary-foreground font-semibold'
+                    ? 'bg-surface-elevated text-foreground font-semibold border border-foreground/30 shadow-2xs'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                 )}
               >
