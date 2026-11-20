@@ -11,15 +11,14 @@ async def handle_unhandled_exception(
     exc: Exception,
 ) -> JSONResponse:
     logger.exception(
-        "Unhandled exception occurred | path=%s | method=%s",
-        request.url.path,
+        "Unhandled exception: %s %s",
         request.method,
-        exc_info=exc,
+        request.url.path,
     )
 
     return JSONResponse(
         status_code=500,
         content={
-            "detail": "Internal server error. Please try again later."
+            "detail": "An unexpected server error occurred.",
         },
     )
