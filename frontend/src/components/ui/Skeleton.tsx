@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn('animate-pulse rounded-md bg-muted/70', className)}
+      className={cn('animate-pulse rounded-md bg-muted/60', className)}
       aria-hidden="true"
       {...props}
     />
@@ -36,6 +36,44 @@ export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
           ))}
         </div>
       ))}
+    </div>
+  )
+}
+
+export function ChartSkeleton({
+  height = 240,
+  className,
+}: {
+  height?: number
+  className?: string
+}) {
+  return (
+    <div
+      style={{ height }}
+      className={cn(
+        'w-full rounded-lg border border-border bg-card p-4 flex flex-col justify-between',
+        className,
+      )}
+      aria-hidden="true"
+    >
+      <div className="flex justify-between items-center pb-2 border-b border-border/40">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-3 w-20" />
+      </div>
+      <div className="flex items-end justify-between gap-3 h-36 pt-4 px-2">
+        <Skeleton className="h-16 flex-1 rounded-t" />
+        <Skeleton className="h-28 flex-1 rounded-t" />
+        <Skeleton className="h-24 flex-1 rounded-t" />
+        <Skeleton className="h-32 flex-1 rounded-t" />
+        <Skeleton className="h-20 flex-1 rounded-t" />
+        <Skeleton className="h-36 flex-1 rounded-t" />
+      </div>
+      <div className="flex justify-between pt-2 border-t border-border/40">
+        <Skeleton className="h-3 w-12" />
+        <Skeleton className="h-3 w-12" />
+        <Skeleton className="h-3 w-12" />
+        <Skeleton className="h-3 w-12" />
+      </div>
     </div>
   )
 }

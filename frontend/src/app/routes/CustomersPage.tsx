@@ -1,9 +1,12 @@
-import { motion } from 'motion/react'
+import { useCallback } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
-import { Download, Check, Info } from 'lucide-react'
+import { Download, Check, Cpu } from 'lucide-react'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { formatCurrency } from '@/lib/formatters'
+import { getStaggerContainer, getItemVariants } from '@/styles/motion'
 import {
   useCustomerDirectory,
   CustomerKpiCards,
@@ -16,6 +19,7 @@ import {
 
 export function CustomersPage() {
   const navigate = useNavigate()
+  const shouldReduceMotion = useReducedMotion()
   const {
     customers,
     totalItems,
@@ -44,78 +48,102 @@ export function CustomersPage() {
     exportToCsv,
   } = useCustomerDirectory()
 
-  const handleSelectCustomer = (customer: CustomerRecord) => {
-    navigate(`/customers/${customer.id}`)
-  }
+  const handleSelectCustomer = useCallback(
+    (customer: CustomerRecord) => {
+      navigate(`/app/customers/${customer.id}`)
+    },
+    [navigate],
+  )
+
+  const containerVariants = getStaggerContainer(shouldReduceMotion, 0.04)
+  const itemVariants = getItemVariants(shouldReduceMotion)
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      className="space-y-4 sm:space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-5 sm:space-y-6 min-w-0"
     >
-      {/* Page Title & Context Header */}
-      <PageHeader
-        title="Customers"
-        description="Explore customer value, behavior, and retention risk."
-        badge={
-          <Badge variant="teal" dot className="shrink-0 font-medium">
-            {globalKpis.totalCustomers} Accounts • BG/NBD ML Cohort
-          </Badge>
-        }
-        actions={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={exportToCsv}
-              className="gap-1.5 cursor-pointer text-xs"
-              aria-label="Export filtered customers to CSV"
-            >
-              {exportSuccess ? (
-                <>
-                  <Check className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>Exported CSV</span>
-                </>
-              ) : (
-                <>
-                  <Download className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span>Export CSV</span>
-                </>
-              )}
-            </Button>
-          </div>
-        }
-      />
+      {/* Page Title & Header */}
+      <motion.div variants={itemVariants}>
+        <PageHeader
+          title="Customers"
+          description="View customer accounts, predicted lifetime value, and churn risk."
+          badge={
+            <Badge variant="neutral" dot className="shrink-0 font-medium">
+              {globalKpis.totalCustomers} Customers
+            </Badge>
+          }
+          actions={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToCsv}
+                className="gap-1.5 cursor-pointer text-xs border-border-strong"
+                aria-label="Export filtered customers to CSV"
+              >
+                {exportSuccess ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-foreground" />
+                    <span>Exported CSV</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>Export CSV</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          }
+        />
+      </motion.div>
 
-      {/* Evaluation Environment Informational Callout */}
-      <div className="flex items-center justify-between gap-3 rounded-md bg-muted/40 border border-border/70 px-3 py-1.5 sm:px-3.5 sm:py-2 text-[11px] sm:text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0" />
-          <span>
-            <strong className="text-foreground font-medium">
-              Deterministic Evaluation Cohort:
-            </strong>{' '}
-            Metrics and predictions are synthetically calculated for verification and testing.
+      {/* Evaluation Environment Status Bar */}
+      <motion.div
+        variants={itemVariants}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 rounded-lg bg-surface-elevated/70 border border-border/80 px-3.5 py-2 text-xs text-muted-foreground"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <Cpu className="h-3.5 w-3.5 text-foreground/80 shrink-0" />
+          <span className="truncate">
+            <strong className="text-foreground font-semibold">Evaluation Mode:</strong>{' '}
+            Deterministic customer intelligence cohort with analytical BG/NBD scoring.
           </span>
         </div>
-        <span className="hidden md:inline font-mono text-[10px] text-muted-foreground/80 shrink-0">
-          Cohort Size: {globalKpis.totalCustomers} | High-Value: {globalKpis.highValueCustomers}
-        </span>
-      </div>
+        <div className="flex items-center gap-3 font-mono text-[11px] shrink-0">
+          <span className="tabular-nums">
+            Accounts: <strong className="text-foreground">{globalKpis.totalCustomers}</strong>
+          </span>
+          <span className="text-border" aria-hidden="true">
+            |
+          </span>
+          <span className="tabular-nums">
+            High-Value: <strong className="text-foreground">{globalKpis.highValueCustomers}</strong>
+          </span>
+          <span className="text-border hidden md:inline" aria-hidden="true">
+            |
+          </span>
+          <span className="hidden md:inline tabular-nums">
+            Avg CLV:{' '}
+            <strong className="text-foreground">{formatCurrency(globalKpis.averageClv)}</strong>
+          </span>
+        </div>
+      </motion.div>
 
       {/* KPI Summary Grid */}
-      <section aria-label="Customer KPI Summary">
+      <motion.section variants={itemVariants} aria-label="Customer KPI Summary">
         <CustomerKpiCards
           kpis={globalKpis}
           filteredCount={totalItems}
           isFiltered={hasActiveFilters}
         />
-      </section>
+      </motion.section>
 
       {/* Search & Filter Controls */}
-      <section aria-label="Customer Directory Filters">
+      <motion.section variants={itemVariants} aria-label="Customer Directory Filters">
         <CustomerFilterBar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -130,11 +158,15 @@ export function CustomersPage() {
           totalFiltered={totalItems}
           totalAll={globalKpis.totalCustomers}
         />
-      </section>
+      </motion.section>
 
       {/* Customer Directory Data Table & Mobile Cards */}
-      <section aria-label="Customer Directory Table" className="space-y-3">
-        {/* Desktop and Tablet Table */}
+      <motion.section
+        variants={itemVariants}
+        aria-label="Customer Directory Table"
+        className="space-y-3"
+      >
+        {/* Desktop and Tablet View */}
         <div className="hidden sm:block">
           <CustomerTable
             customers={customers}
@@ -150,8 +182,8 @@ export function CustomersPage() {
         {/* Mobile View Card List */}
         <div className="sm:hidden">
           {customers.length === 0 ? (
-            <div className="rounded-lg border border-border bg-card p-6 text-center text-xs text-muted-foreground">
-              No customers match your criteria.
+            <div className="rounded-lg border border-border bg-card p-8 text-center text-xs text-muted-foreground">
+              <p className="font-semibold text-foreground">No customers match your criteria.</p>
               {hasActiveFilters && (
                 <div className="mt-3">
                   <Button variant="outline" size="sm" onClick={resetFilters}>
@@ -176,7 +208,7 @@ export function CustomersPage() {
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
         />
-      </section>
+      </motion.section>
     </motion.div>
   )
 }

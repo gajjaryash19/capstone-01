@@ -1,20 +1,33 @@
 /**
- * Design tokens for Valence CLV Intelligence Platform.
+ * Design tokens for Valora Customer Intelligence Platform.
  * Single source of truth for analytical charts, visualization scales, and TypeScript consumption.
  */
+
+import { chartThemes, useChartTheme, type ChartThemeColors } from '@/hooks/useChartTheme'
+import { DURATION_MS, EASINGS, MOTION_CLASSES } from './motion'
+
+export { chartThemes, useChartTheme, type ChartThemeColors }
+export * from './motion'
 
 export const designTokens = {
   colors: {
     background: 'var(--background)',
+    surface: 'var(--surface)',
+    card: 'var(--card)',
+    cardForeground: 'var(--card-foreground)',
+    popover: 'var(--popover)',
+    popoverForeground: 'var(--popover-foreground)',
     foreground: 'var(--foreground)',
     foregroundMuted: 'var(--foreground-muted)',
     foregroundSubtle: 'var(--foreground-subtle)',
-    card: 'var(--card)',
-    cardForeground: 'var(--card-foreground)',
     primary: 'var(--primary)',
     primaryHover: 'var(--primary-hover)',
     primaryLight: 'var(--primary-light)',
     primarySurface: 'var(--primary-surface)',
+    accent: 'var(--accent)',
+    accentHover: 'var(--accent-hover)',
+    accentMuted: 'var(--accent-muted)',
+    accentForeground: 'var(--accent-foreground)',
     border: 'var(--border)',
     borderSubtle: 'var(--border-subtle)',
     borderStrong: 'var(--border-strong)',
@@ -29,14 +42,12 @@ export const designTokens = {
     series4: 'var(--chart-4)', // Mid-Tier Cohort
     series5: 'var(--chart-5)', // Churn Risk
     grid: 'var(--chart-grid)',
-    hex: {
-      series1: '#0d9488', // Teal-600
-      series2: '#0284c7', // Sky-600
-      series3: '#6366f1', // Indigo-500
-      series4: '#d97706', // Amber-600
-      series5: '#e11d48', // Rose-600
-      grid: '#e2e8f0', // Slate-200
-    },
+    axis: 'var(--chart-axis)',
+    /**
+     * Dark-first fallback hex palette for static / non-React contexts.
+     * React components should prefer `useChartTheme()` for dynamic reactivity on theme toggle.
+     */
+    hex: chartThemes.dark,
   },
   typography: {
     fontSans: 'var(--font-sans)',
@@ -47,12 +58,15 @@ export const designTokens = {
     sm: '0.25rem',
     md: '0.375rem',
     lg: '0.5rem',
+    xl: '0.75rem',
     full: '9999px',
   },
   transitions: {
-    fast: '150ms cubic-bezier(0.16, 1, 0.3, 1)',
-    normal: '200ms cubic-bezier(0.16, 1, 0.3, 1)',
+    fast: `${DURATION_MS.fast}ms cubic-bezier(${EASINGS.out.join(', ')})`,
+    normal: `${DURATION_MS.normal}ms cubic-bezier(${EASINGS.out.join(', ')})`,
+    moderate: `${DURATION_MS.moderate}ms cubic-bezier(${EASINGS.out.join(', ')})`,
   },
+  motion: MOTION_CLASSES,
 } as const
 
 export type DesignTokens = typeof designTokens

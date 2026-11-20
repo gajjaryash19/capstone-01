@@ -48,7 +48,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <div className="mt-5">
             <Button variant="outline" size="sm" onClick={this.handleReset}>
               <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-              Reload Application
+              Refresh page
             </Button>
           </div>
         </div>

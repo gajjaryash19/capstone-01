@@ -280,8 +280,7 @@ export function useCustomerDirectory(initialCustomers: CustomerRecord[] = MOCK_C
           comparison = a.averageOrderValue - b.averageOrderValue
           break
         case 'lastPurchaseDate':
-          comparison =
-            new Date(a.lastPurchaseDate).getTime() - new Date(b.lastPurchaseDate).getTime()
+          comparison = a.lastPurchaseDate.localeCompare(b.lastPurchaseDate)
           break
         case 'churnRisk':
           comparison = (RISK_WEIGHTS[a.churnRisk] ?? 0) - (RISK_WEIGHTS[b.churnRisk] ?? 0)
@@ -347,7 +346,7 @@ export function useCustomerDirectory(initialCustomers: CustomerRecord[] = MOCK_C
       const csvContent =
         'data:text/csv;charset=utf-8,' +
         [
-          `# Valence CLV Customer Directory Export`,
+          `# Valora Customer Directory Export`,
           `# Generated: ${new Date().toISOString()}`,
           `# Active Filter Count: ${sortedCustomers.length} of ${initialCustomers.length}`,
           headers.join(','),

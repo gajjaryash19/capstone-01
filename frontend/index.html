@@ -1,10 +1,41 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />
+    <link rel="alternate icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+    <link rel="manifest" href="/favicon/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Valence CLV | Customer Lifetime Value Intelligence</title>
+    <meta name="theme-color" content="#090A0C" />
+    <meta
+      name="description"
+      content="Valora — Advanced Customer Lifetime Value intelligence and customer analytics platform."
+    />
+    <title>Valora — Customer Intelligence</title>
+    <!-- Prevent theme flash before first paint -->
+    <script>
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('valora-theme') || localStorage.getItem('valence-theme')
+          var theme = stored || 'dark'
+          var resolved = theme
+          if (theme === 'system') {
+            resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+          }
+          var root = document.documentElement
+          root.setAttribute('data-theme', resolved)
+          root.classList.toggle('dark', resolved === 'dark')
+          root.classList.toggle('light', resolved === 'light')
+          root.style.colorScheme = resolved
+        } catch (e) {
+          // Fallback to dark if localStorage is blocked
+          document.documentElement.setAttribute('data-theme', 'dark')
+          document.documentElement.classList.add('dark')
+        }
+      })()
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

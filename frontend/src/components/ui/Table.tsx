@@ -3,7 +3,12 @@ import { cn } from '@/lib/utils'
 
 export const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-x-auto">
+    <div
+      className="relative w-full overflow-x-auto focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-lg"
+      tabIndex={0}
+      role="region"
+      aria-label={props['aria-label'] || 'Scrollable data table'}
+    >
       <table
         ref={ref}
         className={cn('w-full caption-bottom text-xs text-foreground', className)}
@@ -52,7 +57,7 @@ export const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      'border-b border-border/60 transition-colors hover:bg-muted/40 data-[state=selected]:bg-muted',
+      'border-b border-border/60 transition-colors duration-100 ease-out hover:bg-surface-elevated/60 active:bg-surface-elevated/80 data-[state=selected]:bg-surface-elevated',
       className,
     )}
     {...props}
@@ -67,7 +72,7 @@ export const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      'h-9 px-3 sm:px-4 text-left align-middle font-medium text-muted-foreground whitespace-nowrap [&:has([role=checkbox])]:pr-0',
+      'h-9 px-3 sm:px-4 text-left align-middle font-medium text-muted-foreground whitespace-nowrap select-none [&:has([role=checkbox])]:pr-0',
       className,
     )}
     {...props}

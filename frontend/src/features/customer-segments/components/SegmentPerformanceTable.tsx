@@ -1,7 +1,7 @@
+import { memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Layers, ArrowRight, Check } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import {
   Table,
@@ -20,7 +20,7 @@ interface SegmentPerformanceTableProps {
   onSelectSegment: (segment: CustomerSegment | null) => void
 }
 
-export function SegmentPerformanceTable({
+function SegmentPerformanceTableComponent({
   segments,
   selectedSegment,
   onSelectSegment,
@@ -29,20 +29,35 @@ export function SegmentPerformanceTable({
 
   const handleNavigateToDirectory = (e: React.MouseEvent, segmentName: CustomerSegment) => {
     e.stopPropagation()
-    navigate(`/customers?segment=${encodeURIComponent(segmentName)}`)
+    navigate(`/app/customers?segment=${encodeURIComponent(segmentName)}`)
+  }
+
+  const getSegmentBadgeStyle = (segment: string) => {
+    switch (segment) {
+      case 'Enterprise':
+        return 'border-foreground/30 bg-surface-elevated text-foreground font-semibold'
+      case 'Mid-Market':
+        return 'border-border bg-muted/60 text-foreground/90 font-medium'
+      case 'Growth':
+        return 'border-border bg-muted/40 text-muted-foreground font-medium'
+      case 'Standard':
+      default:
+        return 'border-border/60 bg-muted/20 text-muted-foreground/80 font-normal'
+    }
   }
 
   return (
-    <Card>
+    <Card className="bg-surface border-border">
       <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 sm:pb-4 border-b border-border gap-2">
         <div>
           <div className="flex items-center gap-2">
-            <Layers className="h-4 w-4 text-primary" />
-            <CardTitle>Cohort Performance & Value Metrics</CardTitle>
+            <Layers className="h-4 w-4 text-foreground/80" />
+            <CardTitle className="text-base font-semibold text-foreground">
+              Segment Performance & Value
+            </CardTitle>
           </div>
-          <CardDescription className="mt-0.5">
-            Comprehensive breakdown of customer distribution, monetization velocity, and risk
-            exposure.
+          <CardDescription className="text-xs text-muted-foreground mt-0.5">
+            Breakdown of customer count, average predicted value, and churn risk by segment.
           </CardDescription>
         </div>
         <div className="flex items-center gap-2">
@@ -51,13 +66,13 @@ export function SegmentPerformanceTable({
               variant="outline"
               size="sm"
               onClick={() => onSelectSegment(null)}
-              className="text-xs h-7 cursor-pointer"
+              className="text-xs h-7 cursor-pointer bg-surface-elevated border-border"
             >
               Clear Selection
             </Button>
           )}
-          <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-            {segments.length} cohorts active
+          <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap font-mono">
+            {segments.length} segments
           </span>
         </div>
       </CardHeader>
@@ -66,22 +81,32 @@ export function SegmentPerformanceTable({
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead scope="col">Cohort Name</TableHead>
-                <TableHead scope="col" className="text-right">
-                  Customers & Share
+              <TableRow className="border-b border-border bg-surface-elevated/70">
+                <TableHead className="px-3 sm:px-4 text-xs font-semibold text-muted-foreground">
+                  Segment
                 </TableHead>
-                <TableHead scope="col" className="text-right">
+                <TableHead className="px-3 sm:px-4 text-xs font-semibold text-right text-muted-foreground">
+                  Accounts
+                </TableHead>
+                <TableHead className="px-3 sm:px-4 text-xs font-semibold text-right text-muted-foreground">
+                  Base Share
+                </TableHead>
+                <TableHead className="px-3 sm:px-4 text-xs font-semibold text-right text-muted-foreground">
                   Avg. Predicted CLV
                 </TableHead>
-                <TableHead scope="col" className="text-right">
-                  Historical Revenue
+                <TableHead className="px-3 sm:px-4 text-xs font-semibold text-right text-muted-foreground">
+                  Total Predicted CLV
                 </TableHead>
-                <TableHead scope="col" className="text-right">
-                  Avg. Order Value
+                <TableHead className="px-3 sm:px-4 text-xs font-semibold text-right text-muted-foreground">
+                  Revenue Share
                 </TableHead>
-                <TableHead scope="col">Risk Profile</TableHead>
-                <TableHead scope="col" className="text-right pr-4">
+                <TableHead className="px-3 sm:px-4 text-xs font-semibold text-right text-muted-foreground">
+                  Avg. AOV
+                </TableHead>
+                <TableHead className="px-3 sm:px-4 text-xs font-semibold text-center text-muted-foreground">
+                  High Risk Share
+                </TableHead>
+                <TableHead className="px-3 sm:px-4 text-xs font-semibold text-right text-muted-foreground">
                   Actions
                 </TableHead>
               </TableRow>
@@ -89,112 +114,89 @@ export function SegmentPerformanceTable({
             <TableBody>
               {segments.map((seg) => {
                 const isSelected = selectedSegment === seg.name
-
                 return (
                   <TableRow
                     key={seg.id}
                     onClick={() => onSelectSegment(isSelected ? null : seg.name)}
-                    data-state={isSelected ? 'selected' : undefined}
-                    className={`cursor-pointer transition-colors ${
-                      isSelected ? 'bg-accent/40 hover:bg-accent/50' : ''
+                    className={`cursor-pointer transition-colors duration-150 ease-out border-b border-border/70 ${
+                      isSelected
+                        ? 'bg-surface-elevated font-medium'
+                        : 'hover:bg-surface-elevated/50'
                     }`}
                   >
-                    {/* Segment name & strategic classification */}
-                    <TableCell className="py-3">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-foreground text-sm">{seg.name}</span>
-                          {isSelected && (
-                            <Badge variant="teal" className="text-[10px] py-0 px-1.5 h-4">
-                              <Check className="h-2.5 w-2.5 mr-0.5" /> Selected
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-muted-foreground line-clamp-1 max-w-xs">
-                          {seg.description}
-                        </p>
-                      </div>
-                    </TableCell>
-
-                    {/* Customer count & share */}
-                    <TableCell className="text-right tabular-nums py-3">
-                      <div className="font-semibold text-foreground">
-                        {formatNumber(seg.customerCount)} accts
-                      </div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {formatPercent(seg.customerShare)} of base
-                      </div>
-                    </TableCell>
-
-                    {/* Avg. Predicted CLV */}
-                    <TableCell className="text-right tabular-nums py-3">
-                      <div className="font-semibold text-foreground">
-                        {formatCurrency(seg.averageClv)}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground">
-                        Total: {formatCurrency(seg.totalClv)}
-                      </div>
-                    </TableCell>
-
-                    {/* Historical Revenue & contribution */}
-                    <TableCell className="text-right tabular-nums py-3">
-                      <div className="font-semibold text-foreground">
-                        {formatCurrency(seg.totalHistoricalRevenue)}
-                      </div>
-                      <div className="text-[11px] text-primary font-medium">
-                        {formatPercent(seg.revenueShare)} rev share
-                      </div>
-                    </TableCell>
-
-                    {/* Avg Order Value & orders */}
-                    <TableCell className="text-right tabular-nums py-3">
-                      <div className="font-semibold text-foreground">
-                        {formatCurrency(seg.averageOrderValue)}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {seg.averageOrders} orders/acct
-                      </div>
-                    </TableCell>
-
-                    {/* Risk indicator */}
-                    <TableCell className="py-3">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1.5">
-                          <Badge
-                            variant={
-                              seg.highRiskPercentage > 30
-                                ? 'destructive'
-                                : seg.highRiskPercentage > 15
-                                  ? 'warning'
-                                  : 'success'
-                            }
-                            className="text-[10px]"
-                          >
-                            {seg.highRiskCount} High Risk (
-                            {formatPercent(seg.highRiskPercentage, 0)})
-                          </Badge>
-                        </div>
-                        <div className="text-[10px] text-muted-foreground tabular-nums">
-                          {seg.churnRiskDistribution.low} Low • {seg.churnRiskDistribution.moderate}{' '}
-                          Mod
-                        </div>
-                      </div>
-                    </TableCell>
-
-                    {/* Actions */}
-                    <TableCell className="text-right py-3 pr-4">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => handleNavigateToDirectory(e, seg.name)}
-                          className="h-7 px-2 text-xs text-primary hover:text-primary hover:bg-accent/80 gap-1 cursor-pointer"
-                          title={`View ${seg.name} customers in directory`}
+                    {/* Cohort Name */}
+                    <TableCell className="px-3 sm:px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs border ${getSegmentBadgeStyle(
+                            seg.name,
+                          )}`}
                         >
-                          <span>Directory</span>
-                          <ArrowRight className="h-3 w-3" />
-                        </Button>
+                          {seg.name}
+                        </span>
+                        {isSelected && (
+                          <span className="flex items-center text-[10px] text-foreground font-mono">
+                            <Check className="h-3 w-3 mr-0.5" /> Selected
+                          </span>
+                        )}
                       </div>
+                    </TableCell>
+
+                    {/* Customer Count */}
+                    <TableCell className="px-3 sm:px-4 py-3 text-right font-mono font-medium text-foreground tabular-nums">
+                      {formatNumber(seg.customerCount)}
+                    </TableCell>
+
+                    {/* Customer Share */}
+                    <TableCell className="px-3 sm:px-4 py-3 text-right font-mono text-muted-foreground tabular-nums">
+                      {formatPercent(seg.customerShare)}
+                    </TableCell>
+
+                    {/* Avg CLV */}
+                    <TableCell className="px-3 sm:px-4 py-3 text-right font-mono font-semibold text-foreground tabular-nums">
+                      {formatCurrency(seg.averageClv)}
+                    </TableCell>
+
+                    {/* Total CLV */}
+                    <TableCell className="px-3 sm:px-4 py-3 text-right font-mono text-foreground tabular-nums">
+                      {formatCurrency(seg.totalClv)}
+                    </TableCell>
+
+                    {/* Revenue Share */}
+                    <TableCell className="px-3 sm:px-4 py-3 text-right font-mono font-medium text-foreground tabular-nums">
+                      {formatPercent(seg.revenueShare)}
+                    </TableCell>
+
+                    {/* Avg Order Value */}
+                    <TableCell className="px-3 sm:px-4 py-3 text-right font-mono text-muted-foreground tabular-nums">
+                      {formatCurrency(seg.averageOrderValue)}
+                    </TableCell>
+
+                    {/* High Risk Share */}
+                    <TableCell className="px-3 sm:px-4 py-3 text-center">
+                      <span
+                        className={`inline-flex items-center rounded-md px-2 py-0.5 font-mono text-xs tabular-nums border ${
+                          seg.highRiskPercentage > 30
+                            ? 'border-red-500/30 bg-red-500/10 text-red-400 font-semibold'
+                            : 'border-border bg-muted/40 text-muted-foreground'
+                        }`}
+                      >
+                        {formatPercent(seg.highRiskPercentage)} ({seg.highRiskCount})
+                      </span>
+                    </TableCell>
+
+                    {/* Action Links */}
+                    <TableCell className="px-3 sm:px-4 py-3 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleNavigateToDirectory(e, seg.name)}
+                        className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                        title={`View ${seg.name} accounts in directory`}
+                      >
+                        <span>Directory</span>
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 )
@@ -206,3 +208,6 @@ export function SegmentPerformanceTable({
     </Card>
   )
 }
+
+export const SegmentPerformanceTable = memo(SegmentPerformanceTableComponent)
+export default SegmentPerformanceTable

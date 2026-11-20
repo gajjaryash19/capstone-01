@@ -11,5 +11,5 @@ def system_info():
     return SystemResponse(
         app_name=settings.app_name,
         version=settings.app_version,
-        status="running",
+        status="healthy",
     )

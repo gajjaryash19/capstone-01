@@ -1,7 +1,21 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { AppLayout } from './layouts/AppLayout'
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { LoadingState } from '@/components/feedback/LoadingState'
+import { ProtectedRoute, PublicAuthRoute } from './routes/ProtectedRoute'
+import { AuthLayout } from './layouts/AuthLayout'
+import { LandingPage } from './routes/LandingPage'
+
+const AppLayout = lazy(() => import('./layouts/AppLayout').then((m) => ({ default: m.AppLayout })))
+const LoginPage = lazy(() => import('./routes/LoginPage').then((m) => ({ default: m.LoginPage })))
+const SignupPage = lazy(() =>
+  import('./routes/SignupPage').then((m) => ({ default: m.SignupPage })),
+)
+const ForgotPasswordPage = lazy(() =>
+  import('./routes/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })),
+)
+const ResetPasswordPage = lazy(() =>
+  import('./routes/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })),
+)
 
 const OverviewPage = lazy(() =>
   import('./routes/OverviewPage').then((m) => ({ default: m.OverviewPage })),
@@ -28,20 +42,83 @@ const NotFoundPage = lazy(() =>
   import('./routes/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 )
 
+function CustomerRedirect() {
+  const { customerId } = useParams()
+  return <Navigate to={`/app/customers/${customerId}`} replace />
+}
+
 export function Router() {
   return (
     <BrowserRouter>
-      <Suspense fallback={<LoadingState message="Loading module..." fullPage />}>
+      <Suspense fallback={<LoadingState message="Loading Valora..." fullPage />}>
         <Routes>
-          <Route element={<AppLayout />}>
-            <Route index element={<OverviewPage />} />
-            <Route path="customers" element={<CustomersPage />} />
-            <Route path="customers/:customerId" element={<CustomerProfilePage />} />
-            <Route path="segments" element={<SegmentsPage />} />
-            <Route path="predictions" element={<PredictionsPage />} />
-            <Route path="insights" element={<InsightsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
+          {/* Standalone Marketing Landing Page */}
+          <Route path="/" element={<LandingPage />} />
+
+          {/* Authentication Routes (Public only: redirects to /app if already signed in) */}
+          <Route
+            path="/login"
+            element={
+              <PublicAuthRoute>
+                <AuthLayout>
+                  <LoginPage />
+                </AuthLayout>
+              </PublicAuthRoute>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PublicAuthRoute>
+                <AuthLayout>
+                  <SignupPage />
+                </AuthLayout>
+              </PublicAuthRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <PublicAuthRoute>
+                <AuthLayout>
+                  <ForgotPasswordPage />
+                </AuthLayout>
+              </PublicAuthRoute>
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={
+              <AuthLayout>
+                <ResetPasswordPage />
+              </AuthLayout>
+            }
+          />
+
+          {/* Protected Valora Analytics Workspace */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/app" element={<AppLayout />}>
+              <Route index element={<OverviewPage />} />
+              <Route path="overview" element={<Navigate to="/app" replace />} />
+              <Route path="customers" element={<CustomersPage />} />
+              <Route path="customers/:customerId" element={<CustomerProfilePage />} />
+              <Route path="segments" element={<SegmentsPage />} />
+              <Route path="predictions" element={<PredictionsPage />} />
+              <Route path="insights" element={<InsightsPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
           </Route>
+
+          {/* Backward compatibility redirects for legacy direct URLs */}
+          <Route path="/overview" element={<Navigate to="/app" replace />} />
+          <Route path="/customers" element={<Navigate to="/app/customers" replace />} />
+          <Route path="/customers/:customerId" element={<CustomerRedirect />} />
+          <Route path="/segments" element={<Navigate to="/app/segments" replace />} />
+          <Route path="/predictions" element={<Navigate to="/app/predictions" replace />} />
+          <Route path="/insights" element={<Navigate to="/app/insights" replace />} />
+          <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
+
+          {/* Catch-all 404 */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

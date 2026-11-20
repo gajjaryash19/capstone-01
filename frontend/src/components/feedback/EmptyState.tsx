@@ -11,8 +11,8 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({
-  title = 'No records found',
-  description = 'There are no items matching the selected filters or parameters.',
+  title = 'No results found',
+  description = 'No items match your current filters. Try adjusting your search or filters.',
   icon: Icon = Inbox,
   action,
   className,

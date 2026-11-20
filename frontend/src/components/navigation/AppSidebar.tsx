@@ -6,12 +6,15 @@ import {
   TrendingUp,
   Sparkles,
   Settings,
-  BarChart2,
   PanelLeftClose,
   PanelLeftOpen,
+  X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SimpleTooltip } from '@/components/ui/Tooltip'
+import { ValoraLogo, ValoraMark } from '@/components/brand/ValoraLogo'
+import { LineSidebar, type LineSidebarItem } from './LineSidebar'
+import { prefetchRoute } from '@/lib/router/prefetch'
 
 interface AppSidebarProps {
   collapsed?: boolean
@@ -20,15 +23,17 @@ interface AppSidebarProps {
   isMobile?: boolean
 }
 
-const primaryNavItems = [
-  { label: 'Overview', to: '/', icon: LayoutDashboard },
-  { label: 'Customers', to: '/customers', icon: Users },
-  { label: 'Segments', to: '/segments', icon: Layers },
-  { label: 'CLV Predictions', to: '/predictions', icon: TrendingUp },
-  { label: 'Insights', to: '/insights', icon: Sparkles },
+const primaryNavItems: LineSidebarItem[] = [
+  { label: 'Overview', to: '/app', icon: LayoutDashboard },
+  { label: 'Customers', to: '/app/customers', icon: Users },
+  { label: 'Segments', to: '/app/segments', icon: Layers },
+  { label: 'Predictions', to: '/app/predictions', icon: TrendingUp },
+  { label: 'Insights', to: '/app/insights', icon: Sparkles },
 ]
 
-const secondaryNavItems = [{ label: 'Settings', to: '/settings', icon: Settings }]
+const secondaryNavItems: LineSidebarItem[] = [
+  { label: 'Settings', to: '/app/settings', icon: Settings },
+]
 
 export function AppSidebar({
   collapsed = false,
@@ -41,7 +46,7 @@ export function AppSidebar({
   return (
     <aside
       className={cn(
-        'flex h-full flex-col border-r border-border bg-card transition-[width] duration-200 ease-in-out select-none',
+        'flex h-full flex-col border-r border-border bg-card transition-[width] duration-250 ease-[cubic-bezier(0.16,1,0.3,1)] select-none',
         isCompact ? 'w-16' : 'w-64',
       )}
     >
@@ -49,144 +54,105 @@ export function AppSidebar({
       <div
         className={cn(
           'flex h-16 items-center border-b border-border',
-          isCompact ? 'justify-center px-0' : 'justify-between px-5',
+          isCompact ? 'justify-center px-0' : 'justify-between px-4 sm:px-5',
         )}
       >
-        <div className="flex items-center gap-2.5 overflow-hidden">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-xs">
-            <BarChart2 className="h-4 w-4" />
-          </div>
-          {!isCompact && (
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-semibold tracking-tight text-foreground leading-tight truncate">
-                Valence CLV
-              </span>
-              <span className="text-[10px] text-muted-foreground leading-tight truncate">
-                Customer Intelligence
-              </span>
-            </div>
-          )}
-        </div>
+        {isCompact ? (
+          <SimpleTooltip content="Valora — Customer Intelligence" side="right">
+            <NavLink
+              to="/"
+              onPointerEnter={() => prefetchRoute('landing')}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-elevated border border-border shadow-xs text-foreground hover:border-border-strong transition-all duration-150 active:scale-95 cursor-pointer"
+              aria-label="Valora Home"
+            >
+              <ValoraMark size={17} />
+            </NavLink>
+          </SimpleTooltip>
+        ) : (
+          <NavLink
+            to="/"
+            onClick={onCloseMobile}
+            onPointerEnter={() => prefetchRoute('landing')}
+            className="group flex items-center gap-2.5 overflow-hidden focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring rounded-md cursor-pointer transition-transform duration-150 active:scale-[0.98]"
+            aria-label="Valora — Customer Intelligence"
+          >
+            <ValoraLogo size="md" />
+          </NavLink>
+        )}
 
+        {/* Sidebar Controls */}
         {!isMobile && !isCompact && onToggleCollapse && (
+          <SimpleTooltip content="Collapse sidebar (Ctrl+B)">
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              aria-label="Collapse sidebar"
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-all duration-150 active:scale-90 cursor-pointer"
+            >
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
+          </SimpleTooltip>
+        )}
+
+        {/* Mobile Close Button */}
+        {isMobile && onCloseMobile && (
           <button
             type="button"
-            onClick={onToggleCollapse}
-            aria-label="Collapse sidebar"
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-colors cursor-pointer"
+            onClick={onCloseMobile}
+            aria-label="Close navigation"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-all duration-150 active:scale-90 cursor-pointer"
           >
-            <PanelLeftClose className="h-4 w-4" />
+            <X className="h-4 w-4" />
           </button>
         )}
       </div>
 
-      {/* Navigation Links Area */}
-      <div className="flex-1 overflow-y-auto px-2.5 py-4 space-y-6">
+      {/* Navigation Links Area powered by LineSidebar */}
+      <div
+        className={cn('flex-1 overflow-y-auto py-4 space-y-6', isCompact ? 'px-2' : 'pl-6 pr-3')}
+      >
         <div>
           {!isCompact && (
-            <div className="mb-2 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground font-mono">
               Core Intelligence
             </div>
           )}
-          <nav className="space-y-1">
-            {primaryNavItems.map((item) => {
-              const Icon = item.icon
-              const link = (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.to === '/'}
-                  onClick={onCloseMobile}
-                  className={({ isActive }) =>
-                    cn(
-                      'group flex items-center rounded-md text-xs font-medium transition-colors cursor-pointer',
-                      isCompact ? 'h-10 w-10 justify-center mx-auto' : 'gap-5 px-3 py-2 ',
-                      isActive
-                        ? 'bg-accent text-accent-foreground font-semibold border border-primary'
-                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <Icon
-                        className={cn(
-                          'h-4 w-4 shrink-0 transition-colors',
-                          isActive
-                            ? 'text-primary'
-                            : 'text-muted-foreground group-hover:text-foreground',
-                        )}
-                      />
-                      {!isCompact && <span className="truncate">{item.label}</span>}
-                    </>
-                  )}
-                </NavLink>
-              )
-
-              if (isCompact) {
-                return (
-                  <SimpleTooltip key={item.to} content={item.label} side="right">
-                    {link}
-                  </SimpleTooltip>
-                )
-              }
-
-              return link
-            })}
-          </nav>
+          <LineSidebar
+            items={primaryNavItems}
+            startIndex={1}
+            isCompact={isCompact}
+            isMobile={isMobile}
+            showIndex={!isCompact}
+            showMarker={!isCompact}
+            proximityRadius={80}
+            maxShift={6}
+            markerLength={18}
+            markerGap={6}
+            itemGap={4}
+            onItemClick={onCloseMobile}
+          />
         </div>
 
         <div>
           {!isCompact && (
-            <div className="mb-2 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground font-mono">
               Configuration
             </div>
           )}
-          <nav className="space-y-1">
-            {secondaryNavItems.map((item) => {
-              const Icon = item.icon
-              const link = (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={onCloseMobile}
-                  className={({ isActive }) =>
-                    cn(
-                      'group flex items-center rounded-md text-xs font-medium transition-colors cursor-pointer',
-                      isCompact ? 'h-10 w-10 justify-center mx-auto' : 'gap-5 px-3 py-2 ',
-                      isActive
-                        ? 'bg-accent text-accent-foreground font-semibold border border-primary'
-                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <Icon
-                        className={cn(
-                          'h-4 w-4 shrink-0 transition-colors',
-                          isActive
-                            ? 'text-primary'
-                            : 'text-muted-foreground group-hover:text-foreground',
-                        )}
-                      />
-                      {!isCompact && <span className="truncate">{item.label}</span>}
-                    </>
-                  )}
-                </NavLink>
-              )
-
-              if (isCompact) {
-                return (
-                  <SimpleTooltip key={item.to} content={item.label} side="right">
-                    {link}
-                  </SimpleTooltip>
-                )
-              }
-
-              return link
-            })}
-          </nav>
+          <LineSidebar
+            items={secondaryNavItems}
+            startIndex={primaryNavItems.length + 1}
+            isCompact={isCompact}
+            isMobile={isMobile}
+            showIndex={!isCompact}
+            showMarker={!isCompact}
+            proximityRadius={80}
+            maxShift={6}
+            markerLength={18}
+            markerGap={6}
+            itemGap={4}
+            onItemClick={onCloseMobile}
+          />
         </div>
       </div>
 
@@ -194,34 +160,46 @@ export function AppSidebar({
       <div className="border-t border-border p-3">
         {isCompact ? (
           <div className="flex flex-col items-center gap-2">
-            <SimpleTooltip content="CLV Engine Active" side="right">
-              <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <SimpleTooltip content="Valora Engine Active • Production" side="right">
+              <div className="flex h-6 w-6 items-center justify-center">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent/40 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
+                </span>
+              </div>
             </SimpleTooltip>
             {onToggleCollapse && (
-              <button
-                type="button"
-                onClick={onToggleCollapse}
-                aria-label="Expand sidebar"
-                className="mt-1 rounded-md p-1.5 text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-colors cursor-pointer"
-              >
-                <PanelLeftOpen className="h-4 w-4" />
-              </button>
+              <SimpleTooltip content="Expand sidebar" side="right">
+                <button
+                  type="button"
+                  onClick={onToggleCollapse}
+                  aria-label="Expand sidebar"
+                  className="rounded-md p-1.5 text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-all duration-150 active:scale-90 cursor-pointer"
+                >
+                  <PanelLeftOpen className="h-4 w-4" />
+                </button>
+              </SimpleTooltip>
             )}
           </div>
         ) : (
-          <div className="flex items-center justify-between rounded-md bg-muted/40 p-2.5 text-xs">
-            <div className="flex items-center gap-2.5">
-              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <div className="flex flex-col">
-                <span className="font-medium text-foreground text-[11px] leading-tight">
-                  Engine v1.0
+          <div className="flex items-center justify-between rounded-lg bg-surface-elevated/70 border border-border/80 p-2.5 text-xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent/40 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
+              </span>
+              <div className="flex flex-col min-w-0">
+                <span className="font-medium text-foreground text-[11px] leading-tight truncate">
+                  Valora Engine v1.0
                 </span>
-                <span className="text-[10px] text-muted-foreground leading-tight">
-                  CLV Models Active
+                <span className="text-[10px] text-muted-foreground leading-tight truncate">
+                  Customer Intelligence
                 </span>
               </div>
             </div>
-            <span className="text-[10px] font-mono text-muted-foreground uppercase">Prod</span>
+            <span className="shrink-0 text-[9px] font-mono font-medium text-accent uppercase px-1.5 py-0.5 rounded bg-accent/10 border border-accent/20">
+              Prod
+            </span>
           </div>
         )}
       </div>

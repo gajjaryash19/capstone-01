@@ -29,7 +29,7 @@ const VALID_SEGMENTS: InsightSegmentFilter[] = [
 export function useInsights(initialCustomers: CustomerRecord[] = MOCK_CUSTOMERS) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [exportSuccess, setExportSuccess] = useState(false)
-  const [selectedInsightModal, setSelectedInsightModal] = useState<BusinessInsight | null>(null)
+  const [explicitModalInsight, setExplicitModalInsight] = useState<BusinessInsight | null>(null)
 
   // URL state bindings
   const rawCategory = searchParams.get('category') as InsightCategory | null
@@ -45,6 +45,7 @@ export function useInsights(initialCustomers: CustomerRecord[] = MOCK_CUSTOMERS)
     rawSegment && VALID_SEGMENTS.includes(rawSegment) ? rawSegment : 'all'
 
   const searchQuery = searchParams.get('q') || ''
+  const auditParam = searchParams.get('audit')
 
   // Deterministic computations
   const allInsights = useMemo(() => generateInsights(initialCustomers), [initialCustomers])
@@ -63,6 +64,33 @@ export function useInsights(initialCustomers: CustomerRecord[] = MOCK_CUSTOMERS)
   const retentionOpportunities = useMemo(
     () => getRetentionOpportunities(initialCustomers),
     [initialCustomers],
+  )
+
+  const selectedInsightModal = useMemo(() => {
+    if (explicitModalInsight) return explicitModalInsight
+    if (auditParam) {
+      return allInsights.find((i) => i.id === auditParam) || null
+    }
+    return null
+  }, [explicitModalInsight, auditParam, allInsights])
+
+  const setSelectedInsightModal = useCallback(
+    (insight: BusinessInsight | null) => {
+      setExplicitModalInsight(insight)
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          if (insight) {
+            next.set('audit', insight.id)
+          } else {
+            next.delete('audit')
+          }
+          return next
+        },
+        { replace: true },
+      )
+    },
+    [setSearchParams],
   )
 
   // Filter setters that sync with URL params
