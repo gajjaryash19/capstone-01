@@ -204,4 +204,48 @@ Simulated mobile throttling (`formFactor: mobile`, network: Slow 4G / 150 ms RTT
 - Achieved: **257.6 kB** (AVIF 1440w) / **237.5 kB** (WebP 1440w) / **148.8 kB** (AVIF 960w) / **124.1 kB** (WebP 960w) — all **< 300 kB** (**PASSED**).
 - CLS: **0.001** (**PASSED**).
 
+---
+
+## Phase 3 — Self-Hosted Variable Typography
+
+### Objectives & Strategy
+1. **Remove External Google Fonts**:
+   - Removed external `<link rel="preconnect">` and Google Fonts stylesheet `<link>` tags referencing `fonts.googleapis.com` and `fonts.gstatic.com` from `index.html`.
+   - Eliminated third-party DNS lookups, TLS negotiations, and render-blocking font stylesheet roundtrips.
+2. **Self-Host Variable WOFF2 Fonts**:
+   - Installed official variable WOFF2 font files into `frontend/public/fonts/`:
+     - `inter-variable-latin.woff2` (47.1 kB, 48,256 B): Full `wght` 100..900 variable axis, latin subset.
+     - `jetbrains-mono-variable-latin.woff2` (39.5 kB, 40,404 B): Full `wght` 100..800 variable axis, latin subset.
+   - Total font payload across the entire application: **86.6 kB**.
+3. **Typography Styling & Metric-Matched Fallbacks**:
+   - Authored `frontend/src/styles/fonts.css` with `font-display: swap` for instant text rendering without invisible text (FOIT).
+   - Created metric-matched fallback font declarations to prevent layout shifts (FOUT):
+     - `Inter Fallback` (backed by `local('Arial')` with `ascent-override: 90.49%`, `descent-override: 22.49%`, `size-adjust: 107.06%`).
+     - `JetBrains Mono Fallback` (backed by `local('Courier New')` with `ascent-override: 84.1%`, `descent-override: 23.9%`, `size-adjust: 104.5%`).
+   - Integrated fallbacks into `theme.css` font variables (`--font-sans` and `--font-mono`).
+4. **First-Paint Font Preload**:
+   - Preloaded the primary UI font (`/fonts/inter-variable-latin.woff2`) directly in `<head>` via `<link rel="preload" as="font" type="font/woff2" crossorigin>`.
+
+---
+
+### Typography Performance & Network Comparison
+
+| Metric / Audit Parameter | Baseline (Phase 0 / Google Fonts) | Phase 3 (Self-Hosted WOFF2) | Impact / Saving |
+| :--- | :--- | :--- | :--- |
+| **External Third-Party Font Requests** | 2 (`fonts.googleapis.com`, `fonts.gstatic.com`) | **0 requests** | **100% eliminated** |
+| **Render-Blocking Font Stylesheets** | 1 (Google Fonts CSS2) | **0 stylesheets** | **100% eliminated** |
+| **External Preconnect Connections** | 2 (`googleapis`, `gstatic`) | **0 connections** | **100% eliminated** |
+| **First-Paint UI Font Preload** | None | **`/fonts/inter-variable-latin.woff2`** | High-priority parallel fetch |
+| **Self-Hosted Font Suite Total Size** | 0 kB (external) | **86.6 kB** (both variable fonts) | Fully cached on origin |
+| **Landing Performance Score (`/`)** | 69 | **85** | **+16 points** |
+| **Landing Total Blocking Time (TBT)** | 358 ms | **167 ms** | **-191 ms (-53.4%)** |
+| **Cumulative Layout Shift (CLS)** | 0.001 | **0.001** | **Unchanged (Zero shift)** |
+| **Landing Over-the-Wire Transfer** | 724.0 kB | **423.5 kB** | **-300.5 kB (-41.5%)** |
+
+*Acceptance Threshold*: No render-blocking third-party CSS, no external font requests.
+- Render-blocking external CSS: **0** (**PASSED**).
+- External font requests: **0** (**PASSED**).
+- CLS: **0.001** (**PASSED**).
+
+
 
