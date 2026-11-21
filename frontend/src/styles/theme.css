@@ -57,8 +57,11 @@
   --color-chart-axis: var(--chart-axis);
 
   /* Typography Scale & Font Families */
-  --font-sans: 'Inter', 'Inter Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+  --font-sans:
+    'Inter', 'Inter Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:
+    'JetBrains Mono', 'JetBrains Mono Fallback', 'Geist Mono', ui-monospace, SFMono-Regular,
+    monospace;
 
   /* Restrained Border Radii */
   --radius-xs: 0.125rem;

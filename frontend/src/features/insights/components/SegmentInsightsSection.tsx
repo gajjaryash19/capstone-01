@@ -187,11 +187,7 @@ export function SegmentInsightsSection({ segmentData }: SegmentInsightsSectionPr
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%" debounce={100}>
-              <BarChart
-                data={chartData}
-                margin={CHART_MARGIN}
-                barCategoryGap="25%"
-              >
+              <BarChart data={chartData} margin={CHART_MARGIN} barCategoryGap="25%">
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartHex.grid} />
                 <XAxis
                   dataKey="segment"
