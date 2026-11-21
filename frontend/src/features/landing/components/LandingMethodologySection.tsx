@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { Check } from 'lucide-react'
-import { useGsapAnimation, gsap } from '@/lib/motion'
+import { gsap } from '@/lib/motion/gsap'
+import { useGsapAnimation } from '@/lib/motion/useGsapAnimation'
 
 interface MethodologyPrinciple {
   title: string

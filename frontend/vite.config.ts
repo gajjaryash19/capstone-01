@@ -12,15 +12,43 @@ export default defineConfig({
     },
   },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules/@supabase')) {
-            return 'vendor-supabase'
-          }
-          if (id.includes('node_modules/lucide-react')) {
-            return 'vendor-icons'
-          }
+        codeSplitting: {
+          groups: [
+            {
+              name: 'vendor-react',
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+            },
+            {
+              name: 'vendor-router',
+              test: /[\\/]node_modules[\\/](react-router|react-router-dom|@remix-run[\\/]router)[\\/]/,
+            },
+            {
+              name: 'vendor-query',
+              test: /[\\/]node_modules[\\/]@tanstack[\\/](react-query|query-core)[\\/]/,
+            },
+            {
+              name: 'vendor-utils',
+              test: /[\\/]node_modules[\\/](clsx|tailwind-merge)[\\/]/,
+            },
+            {
+              name: 'vendor-recharts',
+              test: /[\\/]node_modules[\\/](recharts|victory-vendor|d3-[^\\/]+)[\\/]/,
+            },
+            {
+              name: 'vendor-gsap-lenis',
+              test: /[\\/]node_modules[\\/](gsap|lenis)[\\/]/,
+            },
+            {
+              name: 'vendor-supabase',
+              test: /[\\/]node_modules[\\/]@supabase[\\/]/,
+            },
+            {
+              name: 'vendor-icons',
+              test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
+            },
+          ],
         },
       },
     },

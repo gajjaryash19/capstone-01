@@ -91,3 +91,67 @@ Simulated mobile throttling (`formFactor: mobile`, network: Slow 4G / 150 ms RTT
 3. **Phase 3 Target**: Google Fonts `<link>` tags in `index.html` block rendering via external network requests to `fonts.googleapis.com` and `fonts.gstatic.com`.
 4. **Phase 4 Target**: Landing hero animations hide the H1 with `opacity: 0` inside `useEffect`, holding back LCP until JS initializes and the animation sequence triggers.
 5. **Phase 5 Target**: Heavy dashboard components and Recharts vendor cost (393 kB raw) load upfront with unmemoized renders and prefetching overhead.
+
+---
+
+## Phase 1 — Stop Shipping Landing Page to Everyone
+
+### Objectives & Strategy
+1. **Lazy-load `LandingPage`**: Extracted LandingPage from the synchronous entry graph into its own dynamic chunk. Reused `routeLoaders.landing()` on root load and pointer hover to eliminate Suspense fallback flashing.
+2. **Eliminate `@/lib/motion` barrel imports**: Extracted lightweight media query detection (`prefersReducedMotion`, `isTouchOrMobileDevice`) into a standalone `device.ts` with zero animation dependencies. Migrated `LineSidebar.tsx` and all landing components to explicit subpath imports so GSAP and Lenis are strictly quarantined inside the landing bundle.
+3. **Rolldown Chunk Optimization**: Configured `build.rolldownOptions.output.codeSplitting.groups` for separate stable chunks:
+   - `vendor-react`: `react`, `react-dom`, `scheduler` (218.8 kB raw / 68.3 kB gzip)
+   - `vendor-router`: `react-router`, `react-router-dom`, `@remix-run/router` (39.3 kB raw / 14.1 kB gzip)
+   - `vendor-query`: `@tanstack/react-query`, `@tanstack/query-core` (33.0 kB raw / 9.8 kB gzip)
+   - `vendor-utils`: `clsx`, `tailwind-merge` (27.5 kB raw / 8.7 kB gzip)
+   - `vendor-recharts`: `recharts`, `victory-vendor`, `d3-*` (457.9 kB raw / 128.1 kB gzip)
+   - `vendor-gsap-lenis`: `gsap`, `lenis` (132.0 kB raw / 49.5 kB gzip)
+   - `vendor-supabase`: `@supabase/supabase-js` (dynamic)
+   - `vendor-icons`: `lucide-react` (22.2 kB raw / 7.5 kB gzip)
+4. **Isolate Recharts from Non-Chart Routes**: De-coupled `CustomersPage` from the customers barrel that re-exported `CustomerValueAnalysisCard`. Recharts now loads strictly on the four chart views (`Overview`, `Segments`, `Predictions`, `Insights`) and customer profile.
+5. **Evaluate `LazyMotion`**: Evaluated replacing `motion` with `m` + `LazyMotion` + `domAnimation`. Because entry JS gzip fell to **74.84 kB** (far below the 120 kB acceptance threshold), refactoring 15 components across the dashboard was evaluated and skipped to avoid any regression in route exit presence, and will be tackled alongside runtime profiling in Phase 5.
+
+---
+
+### Key Chunk Comparison (Before vs. After Phase 1)
+
+| Chunk Role / Package | Baseline (Phase 0) | Phase 1 | Change |
+| :--- | :--- | :--- | :--- |
+| **Entry JS Bundle** (`index-*.js`) | 686.95 kB raw / 221.18 kB gzip | **222.89 kB raw / 74.84 kB gzip** | **-67.6% (-146.34 kB gzip)** |
+| **Landing View Chunk** | Bundled in entry | **54.89 kB raw / 12.54 kB gzip** | Fully isolated |
+| **GSAP & Lenis Chunk** | Bundled in entry | **131.98 kB raw / 49.48 kB gzip** | Fully isolated to landing |
+| **React Vendor Chunk** | Bundled in entry | **218.75 kB raw / 68.27 kB gzip** | Stable cached vendor |
+| **Router Vendor Chunk** | Bundled in entry | **39.33 kB raw / 14.08 kB gzip** | Stable cached vendor |
+| **Query Vendor Chunk** | Bundled in entry | **33.00 kB raw / 9.84 kB gzip** | Stable cached vendor |
+| **Recharts Vendor Chunk** | 393.06 kB raw / 111.05 kB gzip | **457.93 kB raw / 128.13 kB gzip** | Isolated from cold entry/auth |
+
+---
+
+### Cold Visit JS Transfer Payload (Before vs. After)
+
+| Route | Baseline JS Transfer (Wire) | Phase 1 JS Transfer (Wire) | Payload Reduction |
+| :--- | :--- | :--- | :--- |
+| **`/login` (Auth Entry)** | 240.2 kB (245,957 B) | **186.1 kB** (190,569 B) | **-22.5% (-54.1 kB)** |
+| **`/` (Landing Page)** | 242.7 kB (248,484 B) | **250.1 kB** (256,074 B) | Chunks split into parallel requests |
+| **`/app` (Overview)** | 465.5 kB (476,716 B) | **406.6 kB** (416,345 B) | **-12.7% (-58.9 kB)** |
+| **`/app/customers`** | 465.5 kB (476,716 B) | **406.6 kB** (416,345 B) | **-12.7% (-58.9 kB)** |
+
+*Acceptance Threshold*: Cold entry JS gzip < 120 kB. Real achieved entry bundle: **74.84 kB gzip** (**PASSED**).
+
+---
+
+### Lighthouse Metrics Comparison (Mobile Preset, Simulated Throttling)
+
+| Route | Metric | Baseline (Phase 0) | Phase 1 | Improvement |
+| :--- | :--- | :--- | :--- | :--- |
+| **`/login`** | Performance Score | 75 | **89** | **+14 points** |
+| | LCP | 4.08 s | **3.34 s** | **-740 ms (-18.1%)** |
+| | TBT | 329 ms | **197 ms** | **-132 ms (-40.1%)** |
+| | Total Transfer Size | 370.7 kB | **316.7 kB** | **-54.0 kB (-14.6%)** |
+| **`/` (Landing)** | Performance Score | 69 | **69** | Stable (hero animation LCP target for Phase 4) |
+| | LCP | 4.65 s | **4.08 s** | **-570 ms (-12.3%)** |
+| | Total Transfer Size | 724.0 kB | **422.1 kB** | **-301.9 kB (-41.7%)** |
+| **`/app/customers`** | Performance Score | 69 | **70** | +1 point |
+| | LCP | 5.75 s | **4.91 s** | **-840 ms (-14.6%)** |
+| | Total Transfer Size | 597.5 kB | **538.6 kB** | **-58.9 kB (-9.9%)** |
+

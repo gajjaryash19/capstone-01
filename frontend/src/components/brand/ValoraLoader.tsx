@@ -16,7 +16,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { gsap } from '@/lib/motion/gsap'
-import { prefersReducedMotion } from '@/lib/motion/lenis'
+import { prefersReducedMotion } from '@/lib/motion/device'
 import { ValoraMark } from '@/components/brand/ValoraLogo'
 
 const LOADER_SESSION_KEY = 'valora_has_loaded_session'

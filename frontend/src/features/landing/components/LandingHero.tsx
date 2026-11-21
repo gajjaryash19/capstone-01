@@ -2,7 +2,10 @@ import { useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { useGsapAnimation, useSmoothScroll, gsap, prefersReducedMotion } from '@/lib/motion'
+import { gsap } from '@/lib/motion/gsap'
+import { useGsapAnimation } from '@/lib/motion/useGsapAnimation'
+import { useSmoothScroll } from '@/lib/motion/useSmoothScroll'
+import { prefersReducedMotion } from '@/lib/motion/device'
 import { prefetchRoute } from '@/lib/router/prefetch'
 
 export interface LandingHeroProps {

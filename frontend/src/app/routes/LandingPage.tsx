@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { LandingView } from '@/features/landing'
-import { SmoothScrollProvider } from '@/lib/motion'
+import { SmoothScrollProvider } from '@/lib/motion/SmoothScrollProvider'
 import { ValoraLoader } from '@/components/brand/ValoraLoader'
 import { prefetchEntryRoutes } from '@/lib/router/prefetch'
 
