@@ -319,25 +319,28 @@ Simulated mobile throttling (`formFactor: mobile`, network: Slow 4G / 150 ms RTT
 
 ### Dashboard Interaction Latency & Core Web Vitals Comparison
 
-#### 1. Real-Device Interaction Latency (Filter & Sort)
+#### 1. Synthetic CDP Trace Latency Benchmark (Filter & Sort)
+*Note: Measured via Chrome DevTools Protocol evaluating keystrokes and click dispatches across 36 mock records paginated at 10 rows/page.*
 
-| Interaction / Action | Baseline Target | Measured Post-Optimization | Status |
+| Interaction / Action Target | Measured Post-Optimization (Phase 5) | Latency Constraint | Status |
 | :--- | :--- | :--- | :--- |
-| **Customers Filter Input (Search Keypress)** | < 100 ms | **11.63 ms** (max: 16.5 ms) | **PASSED (< 12 ms)** |
-| **Customers Column Sort Click** | < 100 ms | **9.00 ms** | **PASSED (< 10 ms)** |
-| **Predictions Filter Input (Search Keypress)** | < 100 ms | **14.18 ms** (max: 22.1 ms) | **PASSED (< 15 ms)** |
-| **Predictions Column Sort Click** | < 100 ms | **8.60 ms** | **PASSED (< 9 ms)** |
-| **Forced Synchronous Layouts in Trace** | 0 thrash | **0 forced reflows** | **PASSED (Zero layout thrash)** |
+| **Customers Filter Input (Search Keypress)** | **11.63 ms** (max: 16.5 ms) | < 100 ms | **PASS (< 12 ms)** |
+| **Customers Column Sort Click** | **9.00 ms** | < 100 ms | **PASS (< 10 ms)** |
+| **Predictions Filter Input (Search Keypress)** | **14.18 ms** (max: 22.1 ms) | < 100 ms | **PASS (< 15 ms)** |
+| **Predictions Column Sort Click** | **8.60 ms** | < 100 ms | **PASS (< 9 ms)** |
+| **Forced Synchronous Layouts in Trace** | **0 forced reflows** | 0 layout thrash | **PASS** |
 
 #### 2. Dashboard Mobile Lighthouse Audit (`/app/customers`)
+*Measured under simulated mobile throttling (Slow 4G, 4x CPU slowdown).*
 
 | Metric / Audit Parameter | Baseline (Phase 0) | Phase 5 (Dashboard Runtime) | Net Change |
 | :--- | :--- | :--- | :--- |
-| **Performance Score** | 69 | **78** | **+9 points** |
-| **Total Blocking Time (TBT)** | 374 ms | **231 ms** | **-143 ms (-38.2%)** |
+| **Performance Score** | 69 | **84** (median of 3) | **+15 points** |
+| **Largest Contentful Paint (LCP)** | 5,750 ms | **4,103 ms** | **-1,647 ms (-28.6%)** |
+| **Total Blocking Time (TBT)** | 374 ms | **199 ms** | **-175 ms (-46.8%)** |
 | **Cumulative Layout Shift (CLS)** | 0.001 | **0.000** | **Zero layout shift** |
 | **Total Transfer Size (Wire)** | 597.5 kB | **514.0 kB** | **-83.5 kB (-14.0%)** |
-| **First Contentful Paint (FCP)** | 771 ms | **771 ms** (0.8 s) | Stable |
+| **First Contentful Paint (FCP)** | 771 ms | **769 ms** | Stable |
 
 *Acceptance Threshold*: Interaction latency under 100 ms on filter/sort (achieved 8.6–14.2 ms), no layout thrash (0 forced layouts).
 - Interaction latency: **8.60 ms to 14.18 ms** (< 100 ms, **PASSED**).
@@ -366,34 +369,41 @@ Simulated mobile throttling (`formFactor: mobile`, network: Slow 4G / 150 ms RTT
 
 ---
 
-### Master Before / After Performance Scorecard (All Phases)
+### Master Before / After Performance Scorecard (Simulated Mobile Throttling, Median of 3 Runs)
 
-| Route / Metric | Baseline (Phase 0) | Optimized (Final) | Absolute Delta | Relative Improvement |
+*Evaluation Conditions: All runs conducted under standard Lighthouse mobile preset (Slow 4G: 150 ms RTT, 1.6 Mbps down, 4x CPU throttling, headless Chrome) on `vite preview`.*
+
+| Route / Metric | Baseline (Phase 0) | Optimized (Final Median) | Absolute Delta | Status & Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | **Landing Page (`/`)** | | | | |
-| — Performance Score | 69 | **86** | **+17 pts** | **+24.6%** |
-| — Largest Contentful Paint (LCP) | 4,650 ms | **607 ms** | **-4,043 ms** | **-86.9%** |
-| — First Contentful Paint (FCP) | 771 ms | **223 ms** | **-548 ms** | **-71.1%** |
-| — Total Blocking Time (TBT) | 358 ms | **126 ms** | **-232 ms** | **-64.8%** |
-| — Cumulative Layout Shift (CLS) | 0.001 | **0.000** | **-0.001** | **Zero shift** |
-| — Total Transfer Size (Wire) | 724.0 kB | **422.1 kB** | **-301.9 kB** | **-41.7%** |
-| — Showcase Images (4 Views) | 1,346.1 kB (PNG) | **124.1 kB** (WebP) / **148.8 kB** (AVIF) | **-1,222.0 kB** | **-90.8%** |
+| — Performance Score | 69 | **72** (variance: 66–83) | **+3 pts** | Improved |
+| — Largest Contentful Paint (LCP) | 4,650 ms | **4,137 ms** | **-513 ms** | -11.0% (Unthrottled desktop LCP: ~607 ms) |
+| — First Contentful Paint (FCP) | 771 ms | **826 ms** | **+55 ms** | Stable |
+| — Total Blocking Time (TBT) | 358 ms | **569 ms** | **+211 ms** | Cold visit GSAP init under 4x CPU throttle |
+| — Cumulative Layout Shift (CLS) | 0.001 | **0.000** | **-0.001** | Zero layout shift |
+| — Total Transfer Size (Wire) | 724.0 kB | **424.0 kB** | **-300.0 kB** | **-41.4% payload reduction** |
+| — Showcase Images (4 Views) | 1,346.1 kB (PNG) | **124.1 kB** (WebP) / **148.8 kB** (AVIF) | **-1,222.0 kB** | **-90.8% payload reduction** |
 | **Login Route (`/login`)** | | | | |
-| — Performance Score | 75 | **89** – **93** | **+14 to +18 pts** | **+24.0%** |
-| — Largest Contentful Paint (LCP) | 4,080 ms | **3,340 ms** | **-740 ms** | **-18.1%** |
-| — Total Blocking Time (TBT) | 329 ms | **197 ms** | **-132 ms** | **-40.1%** |
-| — Cumulative Layout Shift (CLS) | 0.000 | **0.000** | **0.000** | **Zero shift** |
+| — Performance Score | 75 | **93** (variance: 93–94) | **+18 pts** | **+24.0% (Green tier)** |
+| — Largest Contentful Paint (LCP) | 4,080 ms | **3,099 ms** | **-981 ms** | **-24.0%** |
+| — Total Blocking Time (TBT) | 329 ms | **112 ms** | **-217 ms** | **-66.0%** |
+| — Cumulative Layout Shift (CLS) | 0.000 | **0.000** | **0.000** | Zero layout shift |
+| — Total Transfer Size (Wire) | 370.7 kB | **292.0 kB** | **-78.7 kB** | **-21.2% payload reduction** |
 | — Cold JS Wire Transfer | 240.2 kB | **186.1 kB** | **-54.1 kB** | **-22.5%** |
 | **Customers Route (`/app/customers`)** | | | | |
-| — Performance Score | 69 | **78** | **+9 pts** | **+13.0%** |
-| — Total Blocking Time (TBT) | 374 ms | **231 ms** | **-143 ms** | **-38.2%** |
-| — Cumulative Layout Shift (CLS) | 0.001 | **0.000** | **-0.001** | **Zero shift** |
+| — Performance Score | 69 | **84** (variance: 84–84) | **+15 pts** | **+21.7%** |
+| — Largest Contentful Paint (LCP) | 5,750 ms | **4,103 ms** | **-1,647 ms** | **-28.6%** |
+| — Total Blocking Time (TBT) | 374 ms | **199 ms** | **-175 ms** | **-46.8%** |
+| — Cumulative Layout Shift (CLS) | 0.001 | **0.000** | **-0.001** | Zero layout shift |
 | — Total Transfer Size (Wire) | 597.5 kB | **514.0 kB** | **-83.5 kB** | **-14.0%** |
-| — Filter Keystroke Latency | Unoptimized | **11.6 ms** (max: 16.5 ms) | < 100 ms target | **Instantaneous** |
-| — Column Sort Latency | Unoptimized | **9.0 ms** | < 100 ms target | **Instantaneous** |
-| — Forced Synchronous Layouts | Present | **0 forced reflows** | Clean traces | **Zero layout thrash** |
+| **Overview Route (`/app`)** | | | | |
+| — Performance Score | 59 | **70** (variance: 66–72) | **+11 pts** | **+18.6%** |
+| — Largest Contentful Paint (LCP) | 6,250 ms | **5,142 ms** | **-1,108 ms** | **-17.7%** |
+| — Total Blocking Time (TBT) | 355 ms | **422 ms** | **+67 ms** | Heavy Recharts SVG rendering under 4x CPU |
+| — Cumulative Layout Shift (CLS) | **0.197** | **0.000** | **-0.197** | **100% eliminated layout shift (PASSED)** |
+| — Total Transfer Size (Wire) | 597.5 kB | **514.0 kB** | **-83.5 kB** | **-14.0%** |
 | **Global Bundle Architecture** | | | | |
-| — Entry Bundle (`index-*.js`) | 221.18 kB gzip (686.95 kB raw) | **74.03 kB gzip** (222.89 kB raw) | **-147.15 kB gzip** | **-66.5%** |
+| — Entry Bundle (`index-*.js`) | 221.18 kB gzip (686.95 kB raw) | **74.03 kB gzip** (222.89 kB raw) | **-147.15 kB gzip** | **-66.5% reduction** |
 | — Third-Party Font Requests | 2 external requests | **0 requests** (Self-hosted WOFF2) | **-2 requests** | **100% eliminated** |
 | — Render-Blocking Font Stylesheets | 1 external CSS link | **0 external stylesheets** | **-1 stylesheet** | **100% eliminated** |
 
