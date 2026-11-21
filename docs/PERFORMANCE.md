@@ -344,3 +344,102 @@ Simulated mobile throttling (`formFactor: mobile`, network: Slow 4G / 150 ms RTT
 - Layout thrash: **0 forced synchronous layouts** (**PASSED**).
 - TBT improvement: **-38.2% drop on /app/customers** (**PASSED**).
 
+---
+
+## Phase 6 — Keep It Fast (Automated CI Budgets & Guardrails)
+
+### Objectives & Strategy
+1. **Automated Bundle-Size Budget Check**:
+   - Engineered standalone verification script `scripts/check_bundle_size.mjs` (and `frontend/scripts/check_bundle_size.mjs`) callable via `npm run check:size`.
+   - Budget threshold: **82.32 kB gzip** (Phase 1 entry chunk baseline of 74.84 kB gzip + 10% tolerance = 84,295 bytes).
+   - Enforced as a blocking gate in `.github/workflows/ci.yml` immediately following `npm run build`. Builds that regress the entry chunk beyond this budget fail with exit code 1.
+   - Current status: **74.03 kB gzip** (**10.03 kB / 12.2% safety headroom**).
+2. **Lighthouse CI Automated Guardrail**:
+   - Configured `.lighthouserc.json` asserting against marketing (`/`) and authentication (`/login`) routes.
+   - Assertions calibrated just under achieved scores:
+     - `categories:performance`: `minScore: 0.80` (Achieved: 0.83–0.86 on `/`, 0.89–0.93 on `/login`).
+     - `total-blocking-time`: `maxNumericValue: 300 ms` (Achieved: 126 ms on `/`, 197 ms on `/login`).
+     - `cumulative-layout-shift`: `maxNumericValue: 0.05` (Achieved: 0.000).
+     - `largest-contentful-paint`: `maxNumericValue: 4000 ms` (Warning).
+   - Pinned `@lhci/cli` in `devDependencies` and added `npm run lhci` script for seamless CI execution without on-the-fly network downloads.
+   - Integrated `npm run lhci` into `.github/workflows/ci.yml`.
+
+---
+
+### Master Before / After Performance Scorecard (All Phases)
+
+| Route / Metric | Baseline (Phase 0) | Optimized (Final) | Absolute Delta | Relative Improvement |
+| :--- | :--- | :--- | :--- | :--- |
+| **Landing Page (`/`)** | | | | |
+| — Performance Score | 69 | **86** | **+17 pts** | **+24.6%** |
+| — Largest Contentful Paint (LCP) | 4,650 ms | **607 ms** | **-4,043 ms** | **-86.9%** |
+| — First Contentful Paint (FCP) | 771 ms | **223 ms** | **-548 ms** | **-71.1%** |
+| — Total Blocking Time (TBT) | 358 ms | **126 ms** | **-232 ms** | **-64.8%** |
+| — Cumulative Layout Shift (CLS) | 0.001 | **0.000** | **-0.001** | **Zero shift** |
+| — Total Transfer Size (Wire) | 724.0 kB | **422.1 kB** | **-301.9 kB** | **-41.7%** |
+| — Showcase Images (4 Views) | 1,346.1 kB (PNG) | **124.1 kB** (WebP) / **148.8 kB** (AVIF) | **-1,222.0 kB** | **-90.8%** |
+| **Login Route (`/login`)** | | | | |
+| — Performance Score | 75 | **89** – **93** | **+14 to +18 pts** | **+24.0%** |
+| — Largest Contentful Paint (LCP) | 4,080 ms | **3,340 ms** | **-740 ms** | **-18.1%** |
+| — Total Blocking Time (TBT) | 329 ms | **197 ms** | **-132 ms** | **-40.1%** |
+| — Cumulative Layout Shift (CLS) | 0.000 | **0.000** | **0.000** | **Zero shift** |
+| — Cold JS Wire Transfer | 240.2 kB | **186.1 kB** | **-54.1 kB** | **-22.5%** |
+| **Customers Route (`/app/customers`)** | | | | |
+| — Performance Score | 69 | **78** | **+9 pts** | **+13.0%** |
+| — Total Blocking Time (TBT) | 374 ms | **231 ms** | **-143 ms** | **-38.2%** |
+| — Cumulative Layout Shift (CLS) | 0.001 | **0.000** | **-0.001** | **Zero shift** |
+| — Total Transfer Size (Wire) | 597.5 kB | **514.0 kB** | **-83.5 kB** | **-14.0%** |
+| — Filter Keystroke Latency | Unoptimized | **11.6 ms** (max: 16.5 ms) | < 100 ms target | **Instantaneous** |
+| — Column Sort Latency | Unoptimized | **9.0 ms** | < 100 ms target | **Instantaneous** |
+| — Forced Synchronous Layouts | Present | **0 forced reflows** | Clean traces | **Zero layout thrash** |
+| **Global Bundle Architecture** | | | | |
+| — Entry Bundle (`index-*.js`) | 221.18 kB gzip (686.95 kB raw) | **74.03 kB gzip** (222.89 kB raw) | **-147.15 kB gzip** | **-66.5%** |
+| — Third-Party Font Requests | 2 external requests | **0 requests** (Self-hosted WOFF2) | **-2 requests** | **100% eliminated** |
+| — Render-Blocking Font Stylesheets | 1 external CSS link | **0 external stylesheets** | **-1 stylesheet** | **100% eliminated** |
+
+---
+
+### How to Re-Run Measurements & Validations
+
+#### 1. Codebase Lint & Typecheck
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+
+#### 2. Bundle Size Budget Check (Phase 6)
+Fails with exit code 1 if the production entry JS bundle exceeds 82.32 kB gzip:
+```bash
+npm run check:size
+# Or directly:
+node scripts/check_bundle_size.mjs
+```
+
+#### 3. Lighthouse CI (Phase 6)
+Runs headless Lighthouse audits against `/` and `/login` with automated assertions against performance budgets:
+```bash
+cd frontend
+npm run lhci
+```
+
+#### 4. Real-Device Interaction Latency Benchmark (Filter & Sort)
+Benchmarks debounced filter input keystroke latency and table column sort latency against Chrome DevTools Protocol:
+```bash
+node scripts/measure_interaction.mjs
+```
+
+#### 5. Standalone Mobile Lighthouse Audits
+To reproduce the simulated mobile throttling audits against `vite preview`:
+```bash
+# Terminal 1: Launch preview server
+cd frontend
+npm run preview -- --port 4173 --host 127.0.0.1
+
+# Terminal 2: Run Lighthouse mobile audits
+npx -y lighthouse http://127.0.0.1:4173/ --preset=perf --formFactor=mobile --throttling-method=simulate --output=json --output-path=report-landing.json
+npx -y lighthouse http://127.0.0.1:4173/login --preset=perf --formFactor=mobile --throttling-method=simulate --output=json --output-path=report-login.json
+npx -y lighthouse http://127.0.0.1:4173/app/customers --preset=perf --formFactor=mobile --throttling-method=simulate --output=json --output-path=report-customers.json
+```
+
+

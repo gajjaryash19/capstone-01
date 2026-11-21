@@ -20,3 +20,4 @@ data/raw/
 *.joblib
 *.dump
 *.sql.gz
+.lighthouseci/

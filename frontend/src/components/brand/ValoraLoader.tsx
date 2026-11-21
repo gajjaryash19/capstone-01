@@ -68,7 +68,7 @@ export interface ValoraLoaderProps {
   force?: boolean
   /**
    * Minimum duration in seconds for progress counter sequence.
-   * Default: 1.4s (deliberate, fluid, premium pace)
+   * Default: 0.18s for crisp, non-blocking LCP (< 800ms)
    */
   minDuration?: number
 }
@@ -77,7 +77,7 @@ export function ValoraLoader({
   onComplete,
   onReveal,
   force = false,
-  minDuration = 0.35,
+  minDuration = 0.18,
 }: ValoraLoaderProps) {
   const [shouldRender, setShouldRender] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -155,7 +155,7 @@ export function ValoraLoader({
         {
           y: 0,
           opacity: 1,
-          duration: 0.18,
+          duration: 0.1,
           ease: 'power3.out',
         },
         0.02,
@@ -165,10 +165,10 @@ export function ValoraLoader({
           {
             y: 0,
             opacity: 1,
-            duration: 0.18,
+            duration: 0.1,
             ease: 'power2.out',
           },
-          0.05,
+          0.04,
         )
 
         // Stage 3: Smooth 0 -> 100 Counter & Synced Hairline Progress
@@ -185,7 +185,7 @@ export function ValoraLoader({
               }
             },
           },
-          0.08,
+          0.06,
         )
         .to(
           progressLineRef.current,
@@ -194,7 +194,7 @@ export function ValoraLoader({
             duration: minDuration,
             ease: 'power2.inOut',
           },
-          0.08,
+          0.06,
         )
 
         // Stage 4: Brief Hold at 100% then Counter Exit Upward
@@ -203,17 +203,21 @@ export function ValoraLoader({
           {
             yPercent: -140,
             opacity: 0,
-            duration: 0.18,
+            duration: 0.1,
             ease: 'power3.in',
+            onStart: () => {
+              // Trigger homepage entrance as counter completes
+              onRevealRef.current?.()
+            },
           },
-          `+=${0.04}`,
+          `+=${0.02}`,
         )
         .to(
           [brandRef.current, statusLabelRef.current, topBarRef.current],
           {
             y: -24,
             opacity: 0,
-            duration: 0.16,
+            duration: 0.1,
             ease: 'power2.in',
           },
           '<',
@@ -222,7 +226,7 @@ export function ValoraLoader({
           progressLineRef.current,
           {
             opacity: 0,
-            duration: 0.12,
+            duration: 0.08,
             ease: 'power2.out',
           },
           '<',
@@ -233,14 +237,10 @@ export function ValoraLoader({
           containerRef.current,
           {
             yPercent: -100,
-            duration: 0.35,
+            duration: 0.18,
             ease: 'power4.inOut',
-            onStart: () => {
-              // Trigger homepage entrance as the curtain begins lifting
-              onRevealRef.current?.()
-            },
           },
-          '-=0.04',
+          '-=0.02',
         )
     }, containerRef)
 
