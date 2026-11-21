@@ -8,5 +8,8 @@
     "format": "npm --prefix frontend run format",
     "format:check": "npm --prefix frontend run format:check",
     "preview": "npm --prefix frontend run preview"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
   }
 }

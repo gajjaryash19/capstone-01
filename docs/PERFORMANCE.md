@@ -155,3 +155,53 @@ Simulated mobile throttling (`formFactor: mobile`, network: Slow 4G / 150 ms RTT
 | | LCP | 5.75 s | **4.91 s** | **-840 ms (-14.6%)** |
 | | Total Transfer Size | 597.5 kB | **538.6 kB** | **-58.9 kB (-9.9%)** |
 
+---
+
+## Phase 2 — Showcase Image Optimization
+
+### Objectives & Strategy
+1. **One-Off Sharp Optimization Script**: Added `scripts/optimize_screenshots.js` using `sharp` to process the 4 dashboard screenshots referenced in `LandingProductShowcase.tsx`:
+   - `audit-overview-1440` (Executive Overview)
+   - `screenshot-segments-desktop` (Customer Segmentation)
+   - `screenshot-predictions-desktop` (CLV Predictions & Horizons)
+   - `screenshot-insights-desktop` (Autonomous Decision Signals)
+2. **Modern Format & Responsive Width Generation**:
+   - Generated AVIF (`quality: 65, effort: 5`) and WebP (`quality: 80, effort: 5`) at `960w` (960×540) and `1440w` (1440×810).
+   - Clipped to 16:9 framing (`position: 'top'`), exactly matching the showcase frame's `aspect-video sm:aspect-[16/9]` viewport and eliminating >65% dead payload below the fold.
+3. **Responsive `<picture>` Implementation**:
+   - Updated `LandingProductShowcase.tsx` to render `<picture key={currentView.id}>` with prioritized `<source type="image/avif">`, fallback `<source type="image/webp">`, and responsive `sizes="(max-width: 1024px) 960px, 1440px"`.
+   - Set explicit `width={1440}` and `height={810}` on the `<img>` fallback, guaranteeing an exact 16:9 intrinsic aspect ratio to eliminate layout shift (CLS = 0.001).
+   - Maintained `loading="lazy"` and `decoding="async"`.
+4. **Purge Unreferenced Source PNGs**:
+   - Removed the 4 uncompressed source PNGs (totaling 1,378.4 kB) from `frontend/public/screenshots`. Identical documentation copies are preserved in `docs/screenshots`.
+
+---
+
+### Showcase Image Size Breakdown (Before vs. After)
+
+| Showcase View | Original PNG | AVIF 960w | WebP 960w | AVIF 1440w | WebP 1440w | Single View Saving (1440w) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Executive Overview** (`audit-overview-1440`) | 312.1 kB (319,595 B) | **38.3 kB** (39,210 B) | **31.1 kB** (31,840 B) | **67.2 kB** (68,863 B) | **60.5 kB** (61,972 B) | **-78.5% (AVIF) / -80.6% (WebP)** |
+| **Segmentation** (`screenshot-segments-desktop`) | 262.6 kB (268,930 B) | **32.8 kB** (33,538 B) | **27.5 kB** (28,194 B) | **56.0 kB** (57,317 B) | **52.7 kB** (53,974 B) | **-78.7% (AVIF) / -79.9% (WebP)** |
+| **Predictions** (`screenshot-predictions-desktop`) | 341.8 kB (350,041 B) | **40.2 kB** (41,130 B) | **33.8 kB** (34,580 B) | **73.0 kB** (74,714 B) | **66.2 kB** (67,780 B) | **-78.6% (AVIF) / -80.6% (WebP)** |
+| **Insights** (`screenshot-insights-desktop`) | 429.5 kB (439,812 B) | **37.6 kB** (38,530 B) | **31.8 kB** (32,512 B) | **61.4 kB** (62,845 B) | **58.1 kB** (59,470 B) | **-85.7% (AVIF) / -86.5% (WebP)** |
+
+---
+
+### Showcase Aggregate Totals & Acceptance Verification
+
+| Asset Metric / Aggregate | Baseline (Phase 0 / PNG) | Phase 2 (Optimized) | Change |
+| :--- | :--- | :--- | :--- |
+| **Total 4 Showcase Views (AVIF 1440w)** | 1,346.1 kB (1,378,378 B) | **257.6 kB** (263,739 B) | **-80.9% (-1,088.5 kB)** |
+| **Total 4 Showcase Views (WebP 1440w)** | 1,346.1 kB (1,378,378 B) | **237.5 kB** (243,196 B) | **-82.4% (-1,108.6 kB)** |
+| **Total 4 Showcase Views (AVIF 960w)** | 1,346.1 kB (1,378,378 B) | **148.8 kB** (152,408 B) | **-88.9% (-1,197.3 kB)** |
+| **Total 4 Showcase Views (WebP 960w)** | 1,346.1 kB (1,378,378 B) | **124.1 kB** (127,126 B) | **-90.8% (-1,222.0 kB)** |
+| **Active First View Wire Payload (Mobile)** | 312.1 kB (PNG) | **38.3 kB** (AVIF 960w) | **-87.7% (-273.8 kB)** |
+| **Cumulative Layout Shift (CLS)** | 0.001 | **0.001** | **Unchanged (Zero shift)** |
+| **Production `dist/` Directory Total Size** | 1,758.65 kB (no images) / ~3,104 kB (with PNGs) | **3,451.92 kB** (includes all 16 AVIF + WebP variants) | **768.04 kB** total for all 16 assets |
+
+*Acceptance Threshold*: Showcase images total under 300 kB, CLS unchanged or better.
+- Achieved: **257.6 kB** (AVIF 1440w) / **237.5 kB** (WebP 1440w) / **148.8 kB** (AVIF 960w) / **124.1 kB** (WebP 960w) — all **< 300 kB** (**PASSED**).
+- CLS: **0.001** (**PASSED**).
+
+
