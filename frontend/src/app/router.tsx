@@ -3,7 +3,19 @@ import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-
 import { LoadingState } from '@/components/feedback/LoadingState'
 import { ProtectedRoute, PublicAuthRoute } from './routes/ProtectedRoute'
 import { AuthLayout } from './layouts/AuthLayout'
-import { LandingPage } from './routes/LandingPage'
+import { routeLoaders } from '@/lib/router/prefetch'
+
+// Trigger prefetch immediately on initial root load
+if (
+  typeof window !== 'undefined' &&
+  (window.location.pathname === '/' || window.location.pathname === '')
+) {
+  routeLoaders.landing()
+}
+
+const LandingPage = lazy(() =>
+  import('./routes/LandingPage').then((m) => ({ default: m.LandingPage })),
+)
 
 const AppLayout = lazy(() => import('./layouts/AppLayout').then((m) => ({ default: m.AppLayout })))
 const LoginPage = lazy(() => import('./routes/LoginPage').then((m) => ({ default: m.LoginPage })))

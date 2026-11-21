@@ -11,7 +11,7 @@
 
 // Route dynamic import loaders matching router.tsx
 export const routeLoaders = {
-  landing: () => Promise.resolve(),
+  landing: () => import('@/app/routes/LandingPage'),
   login: () => import('@/app/routes/LoginPage'),
   signup: () => import('@/app/routes/SignupPage'),
   forgotPassword: () => import('@/app/routes/ForgotPasswordPage'),

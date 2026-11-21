@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useCallback, useMemo } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
-import { prefersReducedMotion, isTouchOrMobileDevice } from '@/lib/motion/lenis'
+import { prefersReducedMotion, isTouchOrMobileDevice } from '@/lib/motion/device'
 import { prefetchRoute } from '@/lib/router/prefetch'
 import './LineSidebar.css'
 

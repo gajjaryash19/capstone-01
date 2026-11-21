@@ -65,6 +65,8 @@ function CustomTrajectoryTooltip({ active, payload, label }: CustomTooltipProps)
   )
 }
 
+const CHART_MARGIN = { top: 12, right: 12, left: -8, bottom: 0 }
+
 export function ClvTrajectoryChart({ data }: ClvTrajectoryChartProps) {
   const chartHex = useChartTheme()
   const lastPoint = data.length > 0 ? data[data.length - 1] : null
@@ -95,8 +97,8 @@ export function ClvTrajectoryChart({ data }: ClvTrajectoryChartProps) {
 
       <CardContent className="pt-4 sm:pt-6 min-w-0 flex-1 flex flex-col justify-between">
         <div className="h-64 sm:h-72 md:h-80 w-full min-w-0">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <AreaChart data={data} margin={{ top: 12, right: 12, left: -8, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
+            <AreaChart data={data} margin={CHART_MARGIN}>
               <defs>
                 <linearGradient id="clvObservedGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={chartHex.series1} stopOpacity={0.16} />

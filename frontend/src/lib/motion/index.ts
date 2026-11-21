@@ -7,6 +7,7 @@
 
 export * from './gsap'
 export * from './lenis'
+export * from './device'
 export * from './useGsapAnimation'
 export * from './useSmoothScroll'
 export * from './SmoothScrollProvider'

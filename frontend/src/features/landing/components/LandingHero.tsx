@@ -2,7 +2,9 @@ import { useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { useGsapAnimation, useSmoothScroll, gsap, prefersReducedMotion } from '@/lib/motion'
+import { gsap } from '@/lib/motion/gsap'
+import { useSmoothScroll } from '@/lib/motion/useSmoothScroll'
+import { prefersReducedMotion, isTouchOrMobileDevice } from '@/lib/motion/device'
 import { prefetchRoute } from '@/lib/router/prefetch'
 
 export interface LandingHeroProps {
@@ -30,6 +32,7 @@ export function LandingHero({ isRevealed = true }: LandingHeroProps) {
     if (!isRevealed || hasAnimatedRef.current || !containerRef.current) return
 
     const isReduced = prefersReducedMotion()
+    const isMobile = isTouchOrMobileDevice()
     const targets = [
       eyebrowRef.current,
       headlineRef.current,
@@ -39,7 +42,7 @@ export function LandingHero({ isRevealed = true }: LandingHeroProps) {
       tickerRef.current,
     ].filter(Boolean)
 
-    if (isReduced) {
+    if (isReduced || isMobile) {
       gsap.set(targets, { opacity: 1, y: 0, clearProps: 'all' })
       hasAnimatedRef.current = true
       return
@@ -55,58 +58,26 @@ export function LandingHero({ isRevealed = true }: LandingHeroProps) {
         },
       })
 
-      // Initial state
-      gsap.set(targets, { opacity: 0 })
-      gsap.set(eyebrowRef.current, { y: -12 })
-      gsap.set(headlineRef.current, { y: 44 })
-      gsap.set(paragraphRef.current, { y: 24 })
-      gsap.set(ctaRef.current, { y: 18 })
-      gsap.set(widgetRef.current, { y: 32, scale: 0.97 })
-      gsap.set(tickerRef.current, { y: 12 })
-
-      // Coordinated reveal timeline synchronized with loader curtain lift
-      tl.to(eyebrowRef.current, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 0.04)
-        .to(headlineRef.current, { opacity: 1, y: 0, duration: 1.05, ease: 'power4.out' }, 0.1)
-        .to(paragraphRef.current, { opacity: 1, y: 0, duration: 0.85, ease: 'power3.out' }, 0.22)
-        .to(ctaRef.current, { opacity: 1, y: 0, duration: 0.75, ease: 'power3.out' }, 0.32)
-        .to(
+      // Animate entrance without suppressing initial opacity on headlineRef
+      // Keeps H1 visible for immediate First Contentful Paint & LCP registration
+      tl.from(eyebrowRef.current, { opacity: 0, y: -12, duration: 0.5, ease: 'power3.out' }, 0.02)
+        .from(headlineRef.current, { y: 24, duration: 0.65, ease: 'power4.out' }, 0.06)
+        .from(paragraphRef.current, { opacity: 0, y: 16, duration: 0.55, ease: 'power3.out' }, 0.12)
+        .from(ctaRef.current, { opacity: 0, y: 12, duration: 0.45, ease: 'power3.out' }, 0.18)
+        .from(
           widgetRef.current,
-          { opacity: 1, y: 0, scale: 1, duration: 0.95, ease: 'power3.out' },
-          0.26,
+          { opacity: 0, y: 20, scale: 0.98, duration: 0.6, ease: 'power3.out' },
+          0.15,
         )
-        .to(
+        .from(
           tickerRef.current,
-          { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', clearProps: 'all' },
-          0.42,
+          { opacity: 0, y: 10, duration: 0.45, ease: 'power2.out', clearProps: 'all' },
+          0.24,
         )
     }, containerRef)
 
     return () => ctx.revert()
   }, [isRevealed])
-
-  // Set initial hidden state if loader is active and has not yet animated
-  useGsapAnimation(
-    (context) => {
-      if (hasAnimatedRef.current || context.data.isReduced) return
-
-      if (!isRevealed) {
-        context.add(() => {
-          gsap.set(
-            [
-              eyebrowRef.current,
-              headlineRef.current,
-              paragraphRef.current,
-              ctaRef.current,
-              widgetRef.current,
-              tickerRef.current,
-            ],
-            { opacity: 0 },
-          )
-        })
-      }
-    },
-    { scope: containerRef },
-  )
 
   return (
     <section

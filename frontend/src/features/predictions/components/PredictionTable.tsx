@@ -31,6 +31,140 @@ interface PredictionTableProps {
   hasActiveFilters: boolean
 }
 
+interface PredictionTableRowProps {
+  customer: EnrichedPredictionCustomer
+  onSelectCustomer: (customer: EnrichedPredictionCustomer) => void
+  getSegmentBadgeStyle: (segment: string) => string
+  getRiskBadge: (risk: string) => string
+}
+
+const PredictionTableRow = memo(function PredictionTableRow({
+  customer,
+  onSelectCustomer,
+  getSegmentBadgeStyle,
+  getRiskBadge,
+}: PredictionTableRowProps) {
+  const isPositiveDelta = customer.valueDelta >= 0
+
+  return (
+    <TableRow
+      key={customer.id}
+      onClick={() => onSelectCustomer(customer)}
+      tabIndex={0}
+      role="row"
+      aria-label={`Inspect predictions for ${customer.name}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onSelectCustomer(customer)
+        }
+      }}
+      className="hover:bg-surface-elevated/60 transition-colors duration-150 ease-out cursor-pointer group border-b border-border/70 focus-visible:bg-surface-elevated/60 outline-none"
+    >
+      {/* Account Identity */}
+      <TableCell className="px-2.5 sm:px-3 py-3">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface-elevated font-mono text-[11px] font-semibold text-foreground border border-border">
+            {customer.avatarInitials}
+          </div>
+          <div className="min-w-0">
+            <div className="font-medium text-xs text-foreground group-hover:text-foreground transition-colors truncate">
+              {customer.name}
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="font-mono text-muted-foreground/80">{customer.id}</span>
+              <span className="truncate flex items-center gap-1">
+                <Building2 className="h-2.5 w-2.5" />
+                {customer.company}
+              </span>
+            </div>
+          </div>
+        </div>
+      </TableCell>
+
+      {/* Segment Badge */}
+      <TableCell className="px-2.5 sm:px-3 py-3">
+        <span
+          className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] border ${getSegmentBadgeStyle(
+            customer.segment,
+          )}`}
+        >
+          {customer.segment}
+        </span>
+      </TableCell>
+
+      {/* Horizon */}
+      <TableCell className="px-2.5 sm:px-3 py-3 font-mono text-xs text-muted-foreground">
+        12 Months
+      </TableCell>
+
+      {/* Historical Spend */}
+      <TableCell className="px-2.5 sm:px-3 py-3 text-right font-mono text-xs tabular-nums text-muted-foreground">
+        {formatCurrency(customer.historicalRevenue)}
+      </TableCell>
+
+      {/* Predicted CLV */}
+      <TableCell className="px-2.5 sm:px-3 py-3 text-right font-mono text-xs font-semibold tabular-nums text-foreground">
+        {formatCurrency(customer.predictedClv)}
+      </TableCell>
+
+      {/* Projected Delta */}
+      <TableCell className="px-2.5 sm:px-3 py-3 text-right font-mono text-xs tabular-nums">
+        <div className="inline-flex items-center gap-1 font-medium text-foreground">
+          {isPositiveDelta ? (
+            <>
+              <TrendingUp className="h-3 w-3 text-muted-foreground" />
+              <span>+{formatCurrency(customer.valueDelta)}</span>
+            </>
+          ) : (
+            <>
+              <TrendingDown className="h-3 w-3 text-muted-foreground" />
+              <span>{formatCurrency(customer.valueDelta)}</span>
+            </>
+          )}
+          <span className="text-[10px] text-muted-foreground">
+            ({isPositiveDelta ? '+' : ''}
+            {formatPercent(customer.valueDeltaPercent, 0)})
+          </span>
+        </div>
+      </TableCell>
+
+      {/* Churn Propensity & Risk */}
+      <TableCell className="px-2.5 sm:px-3 py-3">
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[10px] uppercase border ${getRiskBadge(
+              customer.churnRisk,
+            )}`}
+          >
+            {customer.churnRisk}
+          </span>
+          <span className="font-mono text-xs tabular-nums text-muted-foreground">
+            {formatPercent(customer.churnProbability * 100, 1)}
+          </span>
+        </div>
+      </TableCell>
+
+      {/* Profile Link Action */}
+      <TableCell className="px-2.5 sm:px-3 py-3 text-right pr-3 sm:pr-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation()
+            onSelectCustomer(customer)
+          }}
+          className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+          title="Open customer intelligence profile"
+          aria-label={`Open customer intelligence profile for ${customer.name}`}
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+        </Button>
+      </TableCell>
+    </TableRow>
+  )
+})
+
 function PredictionTableComponent({
   customers,
   sortField,
@@ -158,129 +292,15 @@ function PredictionTableComponent({
                 </TableCell>
               </TableRow>
             ) : (
-              customers.map((customer) => {
-                const isPositiveDelta = customer.valueDelta >= 0
-
-                return (
-                  <TableRow
-                    key={customer.id}
-                    onClick={() => onSelectCustomer(customer)}
-                    tabIndex={0}
-                    role="row"
-                    aria-label={`Inspect predictions for ${customer.name}`}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        onSelectCustomer(customer)
-                      }
-                    }}
-                    className="hover:bg-surface-elevated/60 transition-colors duration-150 ease-out cursor-pointer group border-b border-border/70 focus-visible:bg-surface-elevated/60 outline-none"
-                  >
-                    {/* Account Identity */}
-                    <TableCell className="px-2.5 sm:px-3 py-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface-elevated font-mono text-[11px] font-semibold text-foreground border border-border">
-                          {customer.avatarInitials}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="font-medium text-xs text-foreground group-hover:text-foreground transition-colors truncate">
-                            {customer.name}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                            <span className="font-mono text-muted-foreground/80">
-                              {customer.id}
-                            </span>
-                            <span className="truncate flex items-center gap-1">
-                              <Building2 className="h-2.5 w-2.5" />
-                              {customer.company}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-
-                    {/* Segment Badge */}
-                    <TableCell className="px-2.5 sm:px-3 py-3">
-                      <span
-                        className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] border ${getSegmentBadgeStyle(
-                          customer.segment,
-                        )}`}
-                      >
-                        {customer.segment}
-                      </span>
-                    </TableCell>
-
-                    {/* Horizon */}
-                    <TableCell className="px-2.5 sm:px-3 py-3 font-mono text-xs text-muted-foreground">
-                      12 Months
-                    </TableCell>
-
-                    {/* Historical Spend */}
-                    <TableCell className="px-2.5 sm:px-3 py-3 text-right font-mono text-xs tabular-nums text-muted-foreground">
-                      {formatCurrency(customer.historicalRevenue)}
-                    </TableCell>
-
-                    {/* Predicted CLV */}
-                    <TableCell className="px-2.5 sm:px-3 py-3 text-right font-mono text-xs font-semibold tabular-nums text-foreground">
-                      {formatCurrency(customer.predictedClv)}
-                    </TableCell>
-
-                    {/* Projected Delta */}
-                    <TableCell className="px-2.5 sm:px-3 py-3 text-right font-mono text-xs tabular-nums">
-                      <div className="inline-flex items-center gap-1 font-medium text-foreground">
-                        {isPositiveDelta ? (
-                          <>
-                            <TrendingUp className="h-3 w-3 text-muted-foreground" />
-                            <span>+{formatCurrency(customer.valueDelta)}</span>
-                          </>
-                        ) : (
-                          <>
-                            <TrendingDown className="h-3 w-3 text-muted-foreground" />
-                            <span>{formatCurrency(customer.valueDelta)}</span>
-                          </>
-                        )}
-                        <span className="text-[10px] text-muted-foreground">
-                          ({isPositiveDelta ? '+' : ''}
-                          {formatPercent(customer.valueDeltaPercent, 0)})
-                        </span>
-                      </div>
-                    </TableCell>
-
-                    {/* Churn Propensity & Risk */}
-                    <TableCell className="px-2.5 sm:px-3 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[10px] uppercase border ${getRiskBadge(
-                            customer.churnRisk,
-                          )}`}
-                        >
-                          {customer.churnRisk}
-                        </span>
-                        <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                          {formatPercent(customer.churnProbability * 100, 1)}
-                        </span>
-                      </div>
-                    </TableCell>
-
-                    {/* Profile Link Action */}
-                    <TableCell className="px-2.5 sm:px-3 py-3 text-right pr-3 sm:pr-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onSelectCustomer(customer)
-                        }}
-                        className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-                        title="Open customer intelligence profile"
-                      >
-                        <span className="hidden sm:inline">Profile</span>
-                        <ExternalLink className="h-3 w-3 ml-1" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                )
-              })
+              customers.map((customer) => (
+                <PredictionTableRow
+                  key={customer.id}
+                  customer={customer}
+                  onSelectCustomer={onSelectCustomer}
+                  getSegmentBadgeStyle={getSegmentBadgeStyle}
+                  getRiskBadge={getRiskBadge}
+                />
+              ))
             )}
           </TableBody>
         </Table>

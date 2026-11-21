@@ -50,25 +50,8 @@ let lenisInstance: Lenis | null = null
 let rafCallback: ((time: number) => void) | null = null
 let scrollUpdateCallback: (() => void) | null = null
 
-/**
- * Check if the current user agent is on a mobile/tablet screen or touch device.
- */
-export function isTouchOrMobileDevice(): boolean {
-  if (typeof window === 'undefined') return false
-  return (
-    window.matchMedia('(max-width: 768px)').matches ||
-    'ontouchstart' in window ||
-    navigator.maxTouchPoints > 0
-  )
-}
-
-/**
- * Check if user prefers reduced motion.
- */
-export function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined') return false
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
+export { isTouchOrMobileDevice, prefersReducedMotion } from './device'
+import { isTouchOrMobileDevice, prefersReducedMotion } from './device'
 
 /**
  * Initializes the singleton Lenis smooth-scroll instance and binds it with ScrollTrigger.
@@ -84,12 +67,16 @@ export function initSmoothScroll(options: SmoothScrollOptions = {}): Lenis | nul
   const isReduced = prefersReducedMotion()
   const isMobile = isTouchOrMobileDevice()
 
-  // On mobile or reduced-motion, allow Lenis to operate in native/instant mode or restrained mode
+  // On touch/mobile devices or reduced-motion, disable Lenis completely for 100% native compositor scrolling
+  if (isReduced || isMobile) {
+    return null
+  }
+
   lenisInstance = new Lenis({
-    lerp: options.lerp ?? (isMobile ? 0.2 : 0.1),
+    lerp: options.lerp ?? 0.1,
     duration: options.duration,
     smoothWheel: options.smoothWheel ?? !isReduced,
-    syncTouch: options.syncTouch ?? false,
+    syncTouch: false,
     wheelMultiplier: options.wheelMultiplier ?? 1,
     respectReducedMotion: options.respectReducedMotion ?? true,
     anchors: options.anchors ?? true,

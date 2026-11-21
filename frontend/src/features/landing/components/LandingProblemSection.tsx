@@ -1,5 +1,6 @@
 import { useRef } from 'react'
-import { useGsapAnimation, gsap } from '@/lib/motion'
+import { gsap } from '@/lib/motion/gsap'
+import { useGsapAnimation } from '@/lib/motion/useGsapAnimation'
 
 const problemNarrative = [
   {

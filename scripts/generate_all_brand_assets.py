@@ -14,10 +14,9 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 BRAND_DIR = os.path.join(PROJECT_ROOT, "brand")
 FRONTEND_BRAND = os.path.join(PROJECT_ROOT, "frontend", "public", "brand")
 FRONTEND_FAVICON = os.path.join(PROJECT_ROOT, "frontend", "public", "favicon")
-FRONTEND_LOGO_LEGACY = os.path.join(PROJECT_ROOT, "frontend", "public", "images", "logo")
 
 for d in [BRAND_DIR, os.path.join(BRAND_DIR, "svg"), os.path.join(BRAND_DIR, "png"),
-         os.path.join(BRAND_DIR, "favicon"), FRONTEND_BRAND, FRONTEND_FAVICON, FRONTEND_LOGO_LEGACY]:
+         os.path.join(BRAND_DIR, "favicon"), FRONTEND_BRAND, FRONTEND_FAVICON]:
     os.makedirs(d, exist_ok=True)
 
 # --------------------------------------------------------------------------
@@ -163,8 +162,6 @@ svg_assets = {
 for filename, content in svg_assets.items():
     with open(os.path.join(BRAND_DIR, "svg", filename), "w", encoding="utf-8") as f:
         f.write(content)
-    with open(os.path.join(BRAND_DIR, filename), "w", encoding="utf-8") as f:
-        f.write(content)
     with open(os.path.join(FRONTEND_BRAND, filename), "w", encoding="utf-8") as f:
         f.write(content)
 
@@ -189,12 +186,8 @@ for filename, builder, theme, w, h in png_jobs:
     else:
         png_data = resvg_py.svg_to_bytes(svg_string=svg_str, width=w, height=h)
 
-    for target_dir in [os.path.join(BRAND_DIR, "png"), BRAND_DIR, FRONTEND_BRAND]:
+    for target_dir in [os.path.join(BRAND_DIR, "png"), FRONTEND_BRAND]:
         with open(os.path.join(target_dir, filename), "wb") as f:
-            f.write(png_data)
-
-    if filename == "valora-logo.png":
-        with open(os.path.join(FRONTEND_LOGO_LEGACY, "logo.png"), "wb") as f:
             f.write(png_data)
 
     im = Image.open(io.BytesIO(png_data))
@@ -216,7 +209,7 @@ favicon_targets = [
     ("web-app-manifest-512x512.png", 512, 512),
 ]
 
-for target_dir in [os.path.join(BRAND_DIR, "favicon"), BRAND_DIR, FRONTEND_FAVICON]:
+for target_dir in [os.path.join(BRAND_DIR, "favicon"), FRONTEND_FAVICON]:
     with open(os.path.join(target_dir, "favicon.svg"), "w", encoding="utf-8") as f:
         f.write(favicon_svg_content)
 
@@ -227,19 +220,18 @@ for filename, w, h in favicon_targets:
     im = Image.open(io.BytesIO(png_bytes))
     pil_images[w] = im
 
-    for target_dir in [os.path.join(BRAND_DIR, "favicon"), BRAND_DIR, FRONTEND_FAVICON]:
+    for target_dir in [os.path.join(BRAND_DIR, "favicon"), FRONTEND_FAVICON]:
         with open(os.path.join(target_dir, filename), "wb") as f:
             f.write(png_bytes)
     print(f"Exported Favicon: {filename} -> Size: {im.size}")
 
 # Generate multi-size favicon.ico
 ico_path_brand = os.path.join(BRAND_DIR, "favicon", "favicon.ico")
-ico_path_root = os.path.join(BRAND_DIR, "favicon.ico")
 ico_path_frontend = os.path.join(FRONTEND_FAVICON, "favicon.ico")
 
 base_img = pil_images[48]
 ico_sizes = [(16, 16), (32, 32), (48, 48)]
-for ico_dest in [ico_path_brand, ico_path_root, ico_path_frontend]:
+for ico_dest in [ico_path_brand, ico_path_frontend]:
     base_img.save(
         ico_dest,
         format="ICO",

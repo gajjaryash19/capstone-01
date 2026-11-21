@@ -7,6 +7,11 @@
     "lint": "npm --prefix frontend run lint",
     "format": "npm --prefix frontend run format",
     "format:check": "npm --prefix frontend run format:check",
-    "preview": "npm --prefix frontend run preview"
+    "preview": "npm --prefix frontend run preview",
+    "check:size": "npm --prefix frontend run check:size",
+    "lhci": "npm --prefix frontend run lhci"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
   }
 }

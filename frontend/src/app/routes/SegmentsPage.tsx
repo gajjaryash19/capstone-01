@@ -308,7 +308,11 @@ export function SegmentsPage() {
       </motion.section>
 
       {/* Segment Performance Comparison Table */}
-      <motion.section variants={itemVariants} aria-label="Segment Performance Table">
+      <motion.section
+        variants={itemVariants}
+        aria-label="Segment Performance Table"
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '0 450px' }}
+      >
         <SegmentPerformanceTable
           segments={analyticsData.segments}
           selectedSegment={selectedSegment}
@@ -317,7 +321,11 @@ export function SegmentsPage() {
       </motion.section>
 
       {/* Selected Segment Drill-Down & Member Roster */}
-      <motion.section variants={itemVariants} aria-label="Selected Segment Drill-Down">
+      <motion.section
+        variants={itemVariants}
+        aria-label="Selected Segment Drill-Down"
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}
+      >
         <SegmentDetailDrillDown
           selectedSegment={selectedSegment}
           segmentMetrics={selectedSegmentMetrics}

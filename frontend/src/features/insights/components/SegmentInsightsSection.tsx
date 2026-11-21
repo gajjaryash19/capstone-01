@@ -117,6 +117,8 @@ const SEGMENT_STRATEGY_CARDS = [
   },
 ]
 
+const CHART_MARGIN = { top: 10, right: 10, left: -10, bottom: 0 }
+
 export function SegmentInsightsSection({ segmentData }: SegmentInsightsSectionProps) {
   const navigate = useNavigate()
   const chartHex = useChartTheme()
@@ -184,12 +186,8 @@ export function SegmentInsightsSection({ segmentData }: SegmentInsightsSectionPr
           </div>
 
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartData}
-                margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-                barCategoryGap="25%"
-              >
+            <ResponsiveContainer width="100%" height="100%" debounce={100}>
+              <BarChart data={chartData} margin={CHART_MARGIN} barCategoryGap="25%">
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartHex.grid} />
                 <XAxis
                   dataKey="segment"

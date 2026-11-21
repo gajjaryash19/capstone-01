@@ -32,6 +32,7 @@ export function configureGsap(): typeof gsap {
     ScrollTrigger.config({
       limitCallbacks: true,
       ignoreMobileResize: true,
+      autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load',
     })
 
     isConfigured = true

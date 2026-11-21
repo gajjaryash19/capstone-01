@@ -7,15 +7,13 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { formatCurrency } from '@/lib/formatters'
 import { getStaggerContainer, getItemVariants } from '@/styles/motion'
-import {
-  useCustomerDirectory,
-  CustomerKpiCards,
-  CustomerFilterBar,
-  CustomerTable,
-  CustomerCardList,
-  CustomerPagination,
-  type CustomerRecord,
-} from '@/features/customers'
+import { useCustomerDirectory } from '@/features/customers/hooks/useCustomerDirectory'
+import { CustomerKpiCards } from '@/features/customers/components/CustomerKpiCards'
+import { CustomerFilterBar } from '@/features/customers/components/CustomerFilterBar'
+import { CustomerTable } from '@/features/customers/components/CustomerTable'
+import { CustomerCardList } from '@/features/customers/components/CustomerCardList'
+import { CustomerPagination } from '@/features/customers/components/CustomerPagination'
+import type { CustomerRecord } from '@/features/customers/types'
 
 export function CustomersPage() {
   const navigate = useNavigate()

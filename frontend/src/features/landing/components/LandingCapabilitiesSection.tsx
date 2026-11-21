@@ -2,7 +2,8 @@ import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { useGsapAnimation, gsap } from '@/lib/motion'
+import { gsap } from '@/lib/motion/gsap'
+import { useGsapAnimation } from '@/lib/motion/useGsapAnimation'
 import { prefetchRoute } from '@/lib/router/prefetch'
 
 export function LandingCapabilitiesSection() {

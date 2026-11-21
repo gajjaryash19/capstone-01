@@ -2,7 +2,8 @@ import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Maximize2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { useGsapAnimation, gsap } from '@/lib/motion'
+import { gsap } from '@/lib/motion/gsap'
+import { useGsapAnimation } from '@/lib/motion/useGsapAnimation'
 import { prefetchRoute } from '@/lib/router/prefetch'
 import { cn } from '@/lib/utils'
 
@@ -10,7 +11,7 @@ interface ShowcaseView {
   id: string
   title: string
   subtitle: string
-  imgSrc: string
+  baseSrc: string
   alt: string
   linkTo: string
   metrics: { label: string; value: string }[]
@@ -21,7 +22,7 @@ const showcaseViews: ShowcaseView[] = [
     id: 'overview',
     title: 'Executive Portfolio Overview',
     subtitle: 'Portfolio-level trajectory forecasts and value concentration breakdown',
-    imgSrc: '/screenshots/audit-overview-1440.png',
+    baseSrc: '/screenshots/audit-overview-1440',
     alt: 'Valora Executive Overview Dashboard Interface',
     linkTo: '/app',
     metrics: [
@@ -34,7 +35,7 @@ const showcaseViews: ShowcaseView[] = [
     id: 'segments',
     title: 'Customer Segmentation',
     subtitle: 'Four discrete behavioral cohorts based on recency, frequency, and monetary yield',
-    imgSrc: '/screenshots/screenshot-segments-desktop.png',
+    baseSrc: '/screenshots/screenshot-segments-desktop',
     alt: 'Valora Customer Segmentation Interface',
     linkTo: '/app/segments',
     metrics: [
@@ -48,7 +49,7 @@ const showcaseViews: ShowcaseView[] = [
     title: 'CLV Predictions & Horizons',
     subtitle:
       'Probabilistic monetary projection modeling across 30D, 90D, and 12M forward horizons',
-    imgSrc: '/screenshots/screenshot-predictions-desktop.png',
+    baseSrc: '/screenshots/screenshot-predictions-desktop',
     alt: 'Valora Customer Lifetime Value Predictions Interface',
     linkTo: '/app/predictions',
     metrics: [
@@ -62,7 +63,7 @@ const showcaseViews: ShowcaseView[] = [
     title: 'Autonomous Decision Signals',
     subtitle:
       'Actionable intervention playbooks triggered automatically by statistical velocity decay',
-    imgSrc: '/screenshots/screenshot-insights-desktop.png',
+    baseSrc: '/screenshots/screenshot-insights-desktop',
     alt: 'Valora Autonomous Insights and Playbooks Interface',
     linkTo: '/app/insights',
     metrics: [
@@ -190,14 +191,27 @@ export function LandingProductShowcase() {
 
           {/* Screenshot Display Area with High-Density Zoom Mask */}
           <div className="relative aspect-video sm:aspect-[16/9] w-full overflow-hidden bg-background">
-            <img
-              key={currentView.id}
-              src={currentView.imgSrc}
-              alt={currentView.alt}
-              className="w-full h-full object-cover object-top select-none transition-opacity duration-300"
-              loading="lazy"
-              decoding="async"
-            />
+            <picture key={currentView.id}>
+              <source
+                type="image/avif"
+                srcSet={`${currentView.baseSrc}-960w.avif 960w, ${currentView.baseSrc}-1440w.avif 1440w`}
+                sizes="(max-width: 1024px) 960px, 1440px"
+              />
+              <source
+                type="image/webp"
+                srcSet={`${currentView.baseSrc}-960w.webp 960w, ${currentView.baseSrc}-1440w.webp 1440w`}
+                sizes="(max-width: 1024px) 960px, 1440px"
+              />
+              <img
+                src={`${currentView.baseSrc}-1440w.webp`}
+                alt={currentView.alt}
+                width={1440}
+                height={810}
+                className="w-full h-full object-cover object-top select-none transition-opacity duration-300"
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
           </div>
 
           {/* Bottom Information & Metrics Strip */}
