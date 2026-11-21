@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview",
-    "check:size": "node scripts/check_bundle_size.mjs",
+    "check:size": "node ../scripts/check_bundle_size.mjs",
     "lhci": "lhci autorun"
   },
   "dependencies": {
