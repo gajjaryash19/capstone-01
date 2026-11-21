@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { ScrollTrigger } from '@/lib/motion/gsap'
 import { LandingNav } from './components/LandingNav'
 import { LandingHero } from './components/LandingHero'
 import { LandingProblemSection } from './components/LandingProblemSection'
@@ -22,6 +23,13 @@ export function LandingView({ isRevealed = true }: LandingViewProps) {
   useEffect(() => {
     document.title = 'Valora — Customer Lifetime Value Intelligence'
     window.scrollTo({ top: 0, behavior: 'instant' })
+
+    // Refresh ScrollTrigger once DOM layout and images with explicit dimensions are mounted
+    const timer = setTimeout(() => {
+      ScrollTrigger.refresh()
+    }, 100)
+
+    return () => clearTimeout(timer)
   }, [])
 
   return (

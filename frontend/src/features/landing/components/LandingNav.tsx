@@ -110,10 +110,10 @@ export function LandingNav({ isRevealed = true }: LandingNavProps) {
       <header
         ref={headerRef}
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-all duration-300 select-none',
+          'fixed top-0 left-0 right-0 z-50 select-none transition-colors duration-200 py-3.5',
           isScrolled
-            ? 'border-b border-border bg-background/90 backdrop-blur-md py-3 shadow-sm'
-            : 'border-b border-transparent bg-transparent py-5',
+            ? 'border-b border-border bg-background/95 shadow-xs'
+            : 'border-b border-transparent bg-transparent',
         )}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -131,7 +131,7 @@ export function LandingNav({ isRevealed = true }: LandingNavProps) {
           {/* Desktop Navigation Links */}
           <nav
             aria-label="Marketing Navigation"
-            className="hidden md:flex items-center gap-1 rounded-full border border-border bg-surface/90 px-4 py-1.5 backdrop-blur-sm"
+            className="hidden md:flex items-center gap-1 rounded-full border border-border bg-surface-elevated/95 px-4 py-1.5"
           >
             {navLinks.map((link) => (
               <a
@@ -204,7 +204,7 @@ export function LandingNav({ isRevealed = true }: LandingNavProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-40 bg-background/98 backdrop-blur-sm md:hidden pt-24 px-6 flex flex-col justify-between pb-8"
+            className="fixed inset-0 z-40 bg-background/98 md:hidden pt-24 px-6 flex flex-col justify-between pb-8"
           >
             <div className="space-y-6">
               <div className="border-b border-border pb-5">

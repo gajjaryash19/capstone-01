@@ -67,12 +67,16 @@ export function initSmoothScroll(options: SmoothScrollOptions = {}): Lenis | nul
   const isReduced = prefersReducedMotion()
   const isMobile = isTouchOrMobileDevice()
 
-  // On mobile or reduced-motion, allow Lenis to operate in native/instant mode or restrained mode
+  // On touch/mobile devices or reduced-motion, disable Lenis completely for 100% native compositor scrolling
+  if (isReduced || isMobile) {
+    return null
+  }
+
   lenisInstance = new Lenis({
-    lerp: options.lerp ?? (isMobile ? 0.2 : 0.1),
+    lerp: options.lerp ?? 0.1,
     duration: options.duration,
     smoothWheel: options.smoothWheel ?? !isReduced,
-    syncTouch: options.syncTouch ?? false,
+    syncTouch: false,
     wheelMultiplier: options.wheelMultiplier ?? 1,
     respectReducedMotion: options.respectReducedMotion ?? true,
     anchors: options.anchors ?? true,

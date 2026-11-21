@@ -16,7 +16,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { gsap } from '@/lib/motion/gsap'
-import { prefersReducedMotion } from '@/lib/motion/device'
+import { prefersReducedMotion, isTouchOrMobileDevice } from '@/lib/motion/device'
 import { ValoraMark } from '@/components/brand/ValoraLogo'
 
 const LOADER_SESSION_KEY = 'valora_has_loaded_session'
@@ -77,9 +77,16 @@ export function ValoraLoader({
   onComplete,
   onReveal,
   force = false,
-  minDuration = 1.4,
+  minDuration = 0.35,
 }: ValoraLoaderProps) {
-  const [shouldRender, setShouldRender] = useState<boolean>(() => checkShouldShowLoader(force))
+  const [shouldRender, setShouldRender] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      if (isTouchOrMobileDevice() || prefersReducedMotion()) {
+        return false
+      }
+    }
+    return checkShouldShowLoader(force)
+  })
 
   const containerRef = useRef<HTMLDivElement>(null)
   const topBarRef = useRef<HTMLDivElement>(null)
@@ -105,9 +112,10 @@ export function ValoraLoader({
     }
 
     const isReduced = prefersReducedMotion()
+    const isMobile = isTouchOrMobileDevice()
 
-    // Reduced motion: skip animation completely and reveal immediately
-    if (isReduced || !containerRef.current) {
+    // Reduced motion or mobile touch: skip animation completely and reveal immediately
+    if (isReduced || isMobile || !containerRef.current) {
       try {
         sessionStorage.setItem(LOADER_SESSION_KEY, 'true')
       } catch {
@@ -136,8 +144,8 @@ export function ValoraLoader({
 
       // Stage 1: Initial Layout Setup
       gsap.set(containerRef.current, { yPercent: 0, opacity: 1, visibility: 'visible' })
-      gsap.set(brandRef.current, { y: 20, opacity: 0 })
-      gsap.set([topBarRef.current, statusLabelRef.current], { y: 12, opacity: 0 })
+      gsap.set(brandRef.current, { y: 16, opacity: 0 })
+      gsap.set([topBarRef.current, statusLabelRef.current], { y: 10, opacity: 0 })
       gsap.set(counterWrapperRef.current, { yPercent: 0, opacity: 1 })
       gsap.set(progressLineRef.current, { scaleX: 0, transformOrigin: 'left center' })
 
@@ -147,20 +155,20 @@ export function ValoraLoader({
         {
           y: 0,
           opacity: 1,
-          duration: 0.55,
+          duration: 0.18,
           ease: 'power3.out',
         },
-        0.08,
+        0.02,
       )
         .to(
           [topBarRef.current, statusLabelRef.current],
           {
             y: 0,
             opacity: 1,
-            duration: 0.45,
+            duration: 0.18,
             ease: 'power2.out',
           },
-          0.18,
+          0.05,
         )
 
         // Stage 3: Smooth 0 -> 100 Counter & Synced Hairline Progress
@@ -177,7 +185,7 @@ export function ValoraLoader({
               }
             },
           },
-          0.25,
+          0.08,
         )
         .to(
           progressLineRef.current,
@@ -186,7 +194,7 @@ export function ValoraLoader({
             duration: minDuration,
             ease: 'power2.inOut',
           },
-          0.25,
+          0.08,
         )
 
         // Stage 4: Brief Hold at 100% then Counter Exit Upward
@@ -195,17 +203,17 @@ export function ValoraLoader({
           {
             yPercent: -140,
             opacity: 0,
-            duration: 0.42,
+            duration: 0.18,
             ease: 'power3.in',
           },
-          `+=${0.22}`,
+          `+=${0.04}`,
         )
         .to(
           [brandRef.current, statusLabelRef.current, topBarRef.current],
           {
-            y: -28,
+            y: -24,
             opacity: 0,
-            duration: 0.35,
+            duration: 0.16,
             ease: 'power2.in',
           },
           '<',
@@ -214,7 +222,7 @@ export function ValoraLoader({
           progressLineRef.current,
           {
             opacity: 0,
-            duration: 0.2,
+            duration: 0.12,
             ease: 'power2.out',
           },
           '<',
@@ -225,14 +233,14 @@ export function ValoraLoader({
           containerRef.current,
           {
             yPercent: -100,
-            duration: 0.95,
+            duration: 0.35,
             ease: 'power4.inOut',
             onStart: () => {
               // Trigger homepage entrance as the curtain begins lifting
               onRevealRef.current?.()
             },
           },
-          '-=0.08',
+          '-=0.04',
         )
     }, containerRef)
 
