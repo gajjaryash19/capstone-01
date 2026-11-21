@@ -143,17 +143,29 @@ export function InsightsPage() {
       </motion.div>
 
       {/* 5. Customer Retention Opportunities */}
-      <motion.section variants={itemVariants} aria-label="Customer Retention Deep Dive">
+      <motion.section
+        variants={itemVariants}
+        aria-label="Customer Retention Deep Dive"
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '0 450px' }}
+      >
         <RetentionOpportunitiesSection data={retentionOpportunities} />
       </motion.section>
 
       {/* 6. Segment Value Contribution & Skew */}
-      <motion.section variants={itemVariants} aria-label="Segment Skew and Value Analysis">
+      <motion.section
+        variants={itemVariants}
+        aria-label="Segment Skew and Value Analysis"
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '0 450px' }}
+      >
         <SegmentInsightsSection segmentData={segmentComparisons} />
       </motion.section>
 
       {/* 7. Action Playbook Recommendations */}
-      <motion.section variants={itemVariants} aria-label="Decision Action Playbooks">
+      <motion.section
+        variants={itemVariants}
+        aria-label="Decision Action Playbooks"
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '0 400px' }}
+      >
         <ActionRecommendationsSection recommendations={filteredRecommendations} />
       </motion.section>
 

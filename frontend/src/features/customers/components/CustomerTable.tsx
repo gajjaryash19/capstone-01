@@ -24,6 +24,118 @@ interface CustomerTableProps {
   hasActiveFilters: boolean
 }
 
+interface CustomerTableRowProps {
+  customer: CustomerRecord
+  onSelectCustomer: (customer: CustomerRecord) => void
+  getSegmentBadge: (segment: string) => string
+  getRiskBadge: (risk: string) => React.ReactNode
+}
+
+const CustomerTableRow = memo(function CustomerTableRow({
+  customer,
+  onSelectCustomer,
+  getSegmentBadge,
+  getRiskBadge,
+}: CustomerTableRowProps) {
+  return (
+    <TableRow
+      key={customer.id}
+      onClick={() => onSelectCustomer(customer)}
+      onPointerEnter={() => prefetchRoute('customerProfile')}
+      className="cursor-pointer transition-colors duration-150 ease-out hover:bg-surface-elevated/60 group focus-visible:bg-surface-elevated/60 outline-none"
+      tabIndex={0}
+      role="button"
+      aria-label={`View customer details for ${customer.name}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onSelectCustomer(customer)
+        }
+      }}
+    >
+      {/* Customer: Avatar, Name, ID & Company */}
+      <TableCell className="px-2 sm:px-2.5 py-3">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-foreground font-semibold text-xs border border-border shadow-2xs">
+            {customer.avatarInitials}
+          </div>
+          <div className="min-w-0">
+            <div className="font-semibold text-foreground truncate group-hover:text-foreground transition-colors flex items-center gap-1.5 text-xs">
+              <span>{customer.name}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="font-mono">{customer.id}</span>
+              <span className="text-muted-foreground/50">•</span>
+              <span className="truncate flex items-center gap-0.5">
+                <Building2 className="h-2.5 w-2.5 inline" />
+                {customer.company}
+              </span>
+            </div>
+          </div>
+        </div>
+      </TableCell>
+
+      {/* Segment Badge */}
+      <TableCell className="px-2 sm:px-2.5 py-3 whitespace-nowrap">
+        <span
+          className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-mono border ${getSegmentBadge(
+            customer.segment,
+          )}`}
+        >
+          {customer.segment}
+        </span>
+      </TableCell>
+
+      {/* Predicted CLV */}
+      <TableCell className="px-2 sm:px-2.5 py-3 text-right font-mono font-semibold tabular-nums text-foreground">
+        <span className="text-foreground">{formatCurrency(customer.predictedClv)}</span>
+      </TableCell>
+
+      {/* Historical Revenue */}
+      <TableCell className="px-2 sm:px-2.5 py-3 text-right font-mono font-medium tabular-nums text-muted-foreground">
+        {formatCurrency(customer.historicalRevenue)}
+      </TableCell>
+
+      {/* Total Orders */}
+      <TableCell className="px-2 sm:px-2.5 py-3 text-right font-mono tabular-nums text-muted-foreground">
+        {formatNumber(customer.totalOrders)}
+      </TableCell>
+
+      {/* Average Order Value */}
+      <TableCell className="px-2 sm:px-2.5 py-3 text-right font-mono tabular-nums text-foreground">
+        {formatCurrency(customer.averageOrderValue)}
+      </TableCell>
+
+      {/* Last Purchase */}
+      <TableCell className="px-2 sm:px-2.5 py-3 text-muted-foreground whitespace-nowrap text-[11px] font-mono">
+        {formatDate(customer.lastPurchaseDate)}
+      </TableCell>
+
+      {/* Churn Risk */}
+      <TableCell className="px-2 sm:px-2.5 py-3 whitespace-nowrap">
+        {getRiskBadge(customer.churnRisk)}
+      </TableCell>
+
+      {/* Action / Detail Access */}
+      <TableCell className="px-2 sm:px-2.5 py-3 text-right pr-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation()
+            onSelectCustomer(customer)
+          }}
+          className="h-7 px-2 text-[11px] gap-1 cursor-pointer hover:bg-surface-elevated border-border"
+          aria-label={`Inspect ${customer.name}`}
+        >
+          <span>View</span>
+          <ExternalLink className="h-3 w-3 text-muted-foreground" />
+        </Button>
+      </TableCell>
+    </TableRow>
+  )
+})
+
 function CustomerTableComponent({
   customers,
   sortField,
@@ -164,101 +276,13 @@ function CustomerTableComponent({
               </TableRow>
             ) : (
               customers.map((customer) => (
-                <TableRow
+                <CustomerTableRow
                   key={customer.id}
-                  onClick={() => onSelectCustomer(customer)}
-                  onPointerEnter={() => prefetchRoute('customerProfile')}
-                  className="cursor-pointer transition-colors duration-150 ease-out hover:bg-surface-elevated/60 group focus-visible:bg-surface-elevated/60 outline-none"
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`View customer details for ${customer.name}`}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      onSelectCustomer(customer)
-                    }
-                  }}
-                >
-                  {/* Customer: Avatar, Name, ID & Company */}
-                  <TableCell className="px-2 sm:px-2.5 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-foreground font-semibold text-xs border border-border shadow-2xs">
-                        {customer.avatarInitials}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground truncate group-hover:text-foreground transition-colors flex items-center gap-1.5 text-xs">
-                          <span>{customer.name}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                          <span className="font-mono">{customer.id}</span>
-                          <span className="text-muted-foreground/50">•</span>
-                          <span className="truncate flex items-center gap-0.5">
-                            <Building2 className="h-2.5 w-2.5 inline" />
-                            {customer.company}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-
-                  {/* Segment Badge */}
-                  <TableCell className="px-2 sm:px-2.5 py-3 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-mono border ${getSegmentBadge(
-                        customer.segment,
-                      )}`}
-                    >
-                      {customer.segment}
-                    </span>
-                  </TableCell>
-
-                  {/* Predicted CLV */}
-                  <TableCell className="px-2 sm:px-2.5 py-3 text-right font-mono font-semibold tabular-nums text-foreground">
-                    <span className="text-foreground">{formatCurrency(customer.predictedClv)}</span>
-                  </TableCell>
-
-                  {/* Historical Revenue */}
-                  <TableCell className="px-2 sm:px-2.5 py-3 text-right font-mono font-medium tabular-nums text-muted-foreground">
-                    {formatCurrency(customer.historicalRevenue)}
-                  </TableCell>
-
-                  {/* Total Orders */}
-                  <TableCell className="px-2 sm:px-2.5 py-3 text-right font-mono tabular-nums text-muted-foreground">
-                    {formatNumber(customer.totalOrders)}
-                  </TableCell>
-
-                  {/* Average Order Value */}
-                  <TableCell className="px-2 sm:px-2.5 py-3 text-right font-mono tabular-nums text-foreground">
-                    {formatCurrency(customer.averageOrderValue)}
-                  </TableCell>
-
-                  {/* Last Purchase */}
-                  <TableCell className="px-2 sm:px-2.5 py-3 text-muted-foreground whitespace-nowrap text-[11px] font-mono">
-                    {formatDate(customer.lastPurchaseDate)}
-                  </TableCell>
-
-                  {/* Churn Risk */}
-                  <TableCell className="px-2 sm:px-2.5 py-3 whitespace-nowrap">
-                    {getRiskBadge(customer.churnRisk)}
-                  </TableCell>
-
-                  {/* Action / Detail Access */}
-                  <TableCell className="px-2 sm:px-2.5 py-3 text-right pr-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onSelectCustomer(customer)
-                      }}
-                      className="h-7 px-2 text-[11px] gap-1 cursor-pointer hover:bg-surface-elevated border-border"
-                      aria-label={`Inspect ${customer.name}`}
-                    >
-                      <span>View</span>
-                      <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                  customer={customer}
+                  onSelectCustomer={onSelectCustomer}
+                  getSegmentBadge={getSegmentBadge}
+                  getRiskBadge={getRiskBadge}
+                />
               ))
             )}
           </TableBody>

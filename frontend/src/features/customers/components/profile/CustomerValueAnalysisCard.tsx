@@ -52,6 +52,8 @@ function ValueTooltip({ active, payload }: CustomTooltipProps) {
   )
 }
 
+const CHART_MARGIN = { top: 10, right: 10, left: 10, bottom: 20 }
+
 export function CustomerValueAnalysisCard({ customer }: CustomerValueAnalysisCardProps) {
   const chartHex = useChartTheme()
   const isMobile = useMediaQuery('(max-width: 640px)')
@@ -184,8 +186,8 @@ export function CustomerValueAnalysisCard({ customer }: CustomerValueAnalysisCar
 
         {/* Recharts Value Comparison Chart */}
         <div className="h-60 w-full pt-1">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
+          <ResponsiveContainer width="100%" height="100%" debounce={100}>
+            <BarChart data={chartData} margin={CHART_MARGIN}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartHex.grid} />
               <XAxis
                 dataKey={isMobile ? 'shortCategory' : 'category'}

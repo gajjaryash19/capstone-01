@@ -1,7 +1,8 @@
-import { memo } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { Search, X, RotateCcw, Filter } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { useDebounce } from '@/hooks/useDebounce'
 import type { CustomerSegmentFilter, ChurnRiskFilter, ClvTierFilter } from '../types'
 
 interface CustomerFilterBarProps {
@@ -55,6 +56,21 @@ function CustomerFilterBarComponent({
   totalFiltered,
   totalAll,
 }: CustomerFilterBarProps) {
+  const [localQuery, setLocalQuery] = useState(searchQuery)
+  const [prevSearchQuery, setPrevSearchQuery] = useState(searchQuery)
+  const debouncedQuery = useDebounce(localQuery, 150)
+
+  if (searchQuery !== prevSearchQuery) {
+    setPrevSearchQuery(searchQuery)
+    setLocalQuery(searchQuery)
+  }
+
+  useEffect(() => {
+    if (debouncedQuery !== searchQuery) {
+      onSearchChange(debouncedQuery)
+    }
+  }, [debouncedQuery, searchQuery, onSearchChange])
+
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3 sm:p-4 shadow-xs min-w-0">
       {/* Top Row: Search and Active Results Counter */}
@@ -64,16 +80,19 @@ function CustomerFilterBarComponent({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
           <Input
             type="search"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
+            value={localQuery}
+            onChange={(e) => setLocalQuery(e.target.value)}
             placeholder="Search customers by name, company, email, or ID..."
             aria-label="Search customer directory"
             className="pl-9 pr-8 h-9 text-xs bg-surface-elevated/40 border-border"
           />
-          {searchQuery && (
+          {localQuery && (
             <button
               type="button"
-              onClick={() => onSearchChange('')}
+              onClick={() => {
+                setLocalQuery('')
+                onSearchChange('')
+              }}
               aria-label="Clear search input"
               className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-xs p-0.5 text-muted-foreground hover:text-foreground cursor-pointer transition-transform duration-100 active:scale-90"
             >

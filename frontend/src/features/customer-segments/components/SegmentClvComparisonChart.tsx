@@ -69,6 +69,8 @@ function CustomClvTooltip({ active, payload, label }: CustomTooltipProps) {
   )
 }
 
+const CHART_MARGIN = { top: 10, right: 10, left: 0, bottom: 20 }
+
 export function SegmentClvComparisonChart({
   segments,
   selectedSegment,
@@ -131,8 +133,8 @@ export function SegmentClvComparisonChart({
 
       <CardContent className="pt-5 flex-1 flex flex-col justify-between">
         <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
+          <ResponsiveContainer width="100%" height="100%" debounce={100}>
+            <BarChart data={chartData} margin={CHART_MARGIN}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartHex.grid} />
               <XAxis
                 dataKey="name"

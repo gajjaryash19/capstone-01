@@ -82,7 +82,7 @@ export function AppHeader({ onToggleMobile, onToggleCollapse, collapsed = false 
   })
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-border bg-card/90 px-4 sm:px-6 backdrop-blur-xs select-none transition-colors duration-150">
+    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-border bg-card/95 px-4 sm:px-6 select-none transition-colors duration-150 shadow-xs">
       <div className="flex items-center gap-3">
         {/* Mobile & Tablet Hamburger Toggle */}
         <button
